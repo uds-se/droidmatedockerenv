@@ -1,0 +1,5 @@
+apks/*
+out/*
+
+config.properties
+run.properties
