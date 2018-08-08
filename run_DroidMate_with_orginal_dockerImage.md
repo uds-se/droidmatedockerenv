@@ -10,9 +10,18 @@ DroidMate docker image:
 * Github: [JeannedArk/droidmatedockerenv](https://github.com/JeannedArk/droidmatedockerenv)
 * Dockerhub: [timoguehring/droidmatedockerenv:latest](https://hub.docker.com/r/timoguehring/droidmatedockerenv/)
 
-Copy and paste into a terminal
+1. Make a folder and go inside
+2. [OPTIONAL] Clone DroidMate
+
 ```shell
-docker run -it -e DISPLAY=${DISPLAY} --device="/dev/dri/card0:/dev/dri/card0" -v /tmp/.X11-unix:/tmp/.X11-unix:rw -e XAUTHORITY=/tmp/.docker.xauth -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw  --privileged -v /dev/kvm:/dev/kvm:rw -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock:ro '-lxc-conf=lxc.cgroup.devices.allow = c 226:* rwm' -v `pwd`:/root/project timoguehring/droidmatedockerenv:latest /bin/bash
+git clone git@github.com:uds-se/droidmate.git
+```
+
+3. Edit all you want
+
+4. To run the container. Copy and paste into a terminal in your host
+```shell
+docker run -it -e DISPLAY=${DISPLAY} --device="/dev/dri/card0:/dev/dri/card0" -v /tmp/.X11-unix:/tmp/.X11-unix:rw -e XAUTHORITY=/tmp/.docker.xauth -v /tmp/.docker.xauth:/tmp/.docker.xauth:rw  --privileged -v /dev/kvm:/dev/kvm:rw -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock:ro '-lxc-conf=lxc.cgroup.devices.allow = c 226:* rwm' -v `pwd`/droidmate:/root/droidmate -v `pwd`:/root/project timoguehring/droidmatedockerenv:latest /bin/bash
 ```
 
 ### TL;DR
@@ -24,12 +33,13 @@ apt-get update && apt-get install -y vim
 2. Create a script inside the DroidMate docker container:
 
 ```bash
-emacs run.sh
+emacs scr.sh
 ```
 
 3. Paste this inside:
 
 ```bash
+#!/bin/bash
 
 apt-get update && apt-get install -y git-all
 
@@ -44,12 +54,16 @@ avdmanager create avd -n "droidmate_nexus5_24_gapps_x86-64" -k "system-images;an
 # avdmanager create avd -n "droidmate_nexus5_23_gapps_armeabi-v7a" -k "system-images;android-23;google_apis;armeabi-v7a" -d "Nexus 5"
 
 # fix problem if run the emulator without -no-window
-export LD_LIBRARY_PATH="/android-sdk/tools/lib:/android-sdk/tools/lib64/:/android-sdk/emulator/lib64/qt/lib"
+# export LD_LIBRARY_PATH="/android-sdk/tools/lib:/android-sdk/tools/lib64/:/android-sdk/emulator/lib64/qt/lib"
 
-cd /root
-git clone https://github.com/uds-se/droidmate.git
-cd droidmate
-git checkout dev
+cd /root/droidmate
+if [[ ! -f gradlew ]]; then
+    # is not downloaded
+    cd ..
+    git clone https://github.com/uds-se/droidmate.git
+    cd /root/droidmate
+    git checkout dev
+fi
 
 ./gradlew build
 ./gradlew shadowJar
@@ -62,6 +76,7 @@ cp ./project/pcComponents/API/build/libs/shadow-*.jar .
 # /android-sdk/emulator/emulator64-arm -avd droidmate_nexus5_24_gapps_armeabi-v7a -no-boot-anim -no-window -no-audio -gpu off -skin "1080x1920" &
 # /android-sdk/emulator/emulator64-arm -avd droidmate_nexus5_23_gapps_armeabi-v7a -no-boot-anim -no-window -no-audio -gpu off -skin "1080x1920" &
 
+sleep 1m
 
 wget -q https://software.imdea.org/cloud/index.php/s/z7K9ZCrjSo05Jbi/download -O apks/Tippy_1.1.3-debug.apk
 
@@ -76,16 +91,15 @@ args="${args} --Selectors-timeLimit=${TIME_TOOL_SEC}"
 # args="${args} --Selectors-actionLimit=1000"
 # args="${args} --Selectors-randomSeed=0"
 
-java -jar $(ls shadow-*.jar) ${args}
+java -jar $(ls shadow-*.jar) ${args} &> out/droidmate.log
 ```
 
 4. Run:
+
 ```bash
-chmod +x run.sh
-./run.sh
+chmod +x scr.sh
+./scr.sh
 ```
-
-
 
 ### Inside the container
 
@@ -107,7 +121,7 @@ sdkmanager "system-images;android-24;google_apis;x86_64"
 avdmanager create avd -n "droidmate_nexus5_24_gapps_x86-64" -k "system-images;android-24;google_apis;x86_64" -d "Nexus 5"
 ```
 
-4. Clone DroidMate
+4. [OPTIONAL] Clone DroidMate
 
 ```bash
 cd /root
