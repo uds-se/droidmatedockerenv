@@ -42,7 +42,7 @@ eval ${CMD} &
 
 echo "- Waiting for emulator to boot completely"
 adb wait-for-device &> /dev/null
-sleep 40h
+sleep 1m
 # wait_for_boot_complete "getprop dev.bootcomplete" 1
 # wait_for_boot_complete "getprop sys.boot_completed" 1
 # wait_for_boot_complete "getprop init.svc.bootanim" "stopped"
