@@ -1,2 +1,3 @@
-apks/*
-out/*
+apks*/*
+out*/*
+droidmate*

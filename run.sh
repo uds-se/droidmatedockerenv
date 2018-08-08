@@ -9,13 +9,17 @@ set +e
 # TOOL_COMMIT=${4:-"dev"}
 # config_path=${5:-"config.properties"}
 RUN_CONFIG_FILENAME="run.properties"
-RUN_CONFIG_TEMPLATE_FILENAME="run.properties"
+RUN_CONFIG_TEMPLATE_FILENAME="run.properties.template"
 
+# load def values
+source "${RUN_CONFIG_TEMPLATE_FILENAME}"
+# Overwrite with the custom values
 if [[ ! -f ${RUN_CONFIG_FILENAME} ]]; then
     echo "ERROR: Runner config file: \"${RUN_CONFIG_FILENAME}\" not found"
     echo "INFO: duplicate the ${RUN_CONFIG_TEMPLATE_FILENAME} and edit"
 fi
 source "${RUN_CONFIG_FILENAME}"
+TOOL_COMMIT_ARG=${TOOL_COMMIT}
 
 
 PWD=$(pwd)
@@ -27,20 +31,37 @@ TOOL_REPONAME="droidmate"
 DOCKERFILE="Dockerfile"
 DOCKER_TAG_TOOL="${TOOL_REPONAME}"
 DOCKERFILE_RUNNER="Dockerfile-runner"
+
+share_droidmate=""
+if [[ "${share_droidmate_flag}" == "1" ]] && [[ -d ${TOOL_REPONAME} ]]; then
+    share_droidmate="-v $(pwd)/${TOOL_REPONAME}:${tool_docker_path}"
+    TOOL_COMMIT=$(cd ${TOOL_REPONAME} && git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+    if [[ ${TOOL_COMMIT} == *"HEAD"* ]]; then 
+        # is commit
+        tmpArray=(${TOOL_COMMIT// / })
+        commit=${tmpArray[3]}
+        tmpArray=(${commit//)/ })
+        TOOL_COMMIT=${tmpArray[0]}
+        echo ${TOOL_COMMIT}
+    fi
+fi
+
 DOCKER_RUNNER_TAG="${TOOL_REPONAME}/${TOOL_COMMIT}/${API}/${ARCH}"
-DOCKER_RUNNER_CONTAINER_NAME=$(echo ${DOCKER_RUNNER_TAG} | tr '/' '.')".${DATE_NOW}"
+DOCKER_RUNNER_CONTAINER_NAME="${DATE_NOW}.$(echo ${DOCKER_RUNNER_TAG} | tr '/' '.')"
 # Container name format: [a-zA-Z0-9][a-zA-Z0-9_.-]
 
 
 
 ROOT_HOME="/root/"
+tool_docker_path_relative="${TOOL_REPONAME}/"
+tool_docker_path="${ROOT_HOME}/${tool_docker_path_relative}"
 
 apks_str="apks"
 apks_host_path="${PWD}/${apks_str}"
 apks_docker_path_relative="${TOOL_REPONAME}/${apks_str}"
 apks_docker_path="${ROOT_HOME}/${apks_docker_path_relative}"
 out_str="out"
-out_host_path="${PWD}/${out_str}/"$(date +"%Y-%m-%d_%H-%M-%S")
+out_host_path="${PWD}/${out_str}/${DOCKER_RUNNER_CONTAINER_NAME}"
 mkdir -p ${out_host_path}
 out_docker_path_relative="${TOOL_REPONAME}/${out_str}"
 out_docker_path="${ROOT_HOME}/${out_docker_path_relative}"
@@ -69,11 +90,15 @@ docker build \
     --build-arg TOOL_COMMIT_ARG="${TOOL_COMMIT_ARG}" \
     .
 
+
 docker run \
     -e UID="${UID_tmp}" \
     -e GID="${GID_tmp}" \
     -e TIME_TOOL_SEC="${TIME_TOOL_SEC}" \
     -e DROIDMATE_RUNNER_CONFIG_DOCKER_PATH=${DROIDMATE_RUNNER_CONFIG_DOCKER_PATH} \
+    -e share_droidmate_flag=${share_droidmate_flag} \
+    -e TOOL_COMMIT=${TOOL_COMMIT} \
+    ${share_droidmate} \
     -v "${apks_host_path}":${apks_docker_path} \
     -v "${out_host_path}":${out_docker_path} \
     -v "${config_host_path}":${config_docker_path} \
@@ -87,7 +112,7 @@ docker run \
     -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock:ro '-lxc-conf=lxc.cgroup.devices.allow = c 226:* rwm' \
     --name "${DOCKER_RUNNER_CONTAINER_NAME}" \
     "${DOCKER_RUNNER_TAG}" \
-    bin/bash
+    /root/entrypoint.sh
 
 
 docker wait "${DOCKER_RUNNER_CONTAINER_NAME}" > /dev/null

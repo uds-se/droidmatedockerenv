@@ -1,4 +1,13 @@
+# API = min? -> min?
 API="24"
-ARCH="armeabi-v7a"
-TIME_TOOL_SEC="60"
+
+# ARCH = "x86_64" or "armeabi-v7a"
+ARCH="x86_64"
+
+# the commit or branch of DroidMate to run inside the container
 TOOL_COMMIT="dev"
+# If you want tu use your droidmate downloaded inside this folder. This ignore the var TOOL_COMMIT
+share_droidmate_flag="0"
+
+# TIME_TOOL_SEC maximum time in seconds that  DroidMate will be testing the application ??
+TIME_TOOL_SEC="60"

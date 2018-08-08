@@ -6,7 +6,7 @@ FROM ${FROM_STR}
 
 ARG API_ARG="24"
 ENV API=${API_ARG}
-ARG ARCH_ARG="armeabi-v7a"
+ARG ARCH_ARG="x86_64"
 ENV ARCH=${ARCH_ARG}
 ARG TOOL_COMMIT_ARG="dev"
 ENV TOOL_COMMIT=${TOOL_COMMIT_ARG}
@@ -41,4 +41,5 @@ RUN cd ${TOOL_PATH} && \
 #
 
 COPY ./entrypoint.sh /root/entrypoint.sh
+RUN chmod +x /root/entrypoint.sh
 # ENTRYPOINT [ "bash", "/root/entrypoint.sh" ]
