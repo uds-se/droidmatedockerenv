@@ -97,8 +97,7 @@ ENV ENT ./entrypoint.sh
 RUN URL="https://github.com/uds-se/${TOOL_REPONAME}.git" && \
     git clone ${URL} ${TOOL_PATH} && \
     cd ${TOOL_PATH} && \
-    git checkout ${TOOL_COMMIT_DEF} ; \
-    fi
+    git checkout ${TOOL_COMMIT_DEF}
 
 # Build
 RUN cd ${TOOL_PATH} && \

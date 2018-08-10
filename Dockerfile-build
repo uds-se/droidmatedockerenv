@@ -1,0 +1,41 @@
+
+ARG FROM_STR="droidmate"
+
+FROM ${FROM_STR}
+
+
+ARG TOOL_COMMIT_ARG="dev"
+ENV TOOL_COMMIT=${TOOL_COMMIT_ARG}
+ARG DROIDMATE_LIBS_PATH_RELATIVE_ARG="dev"
+
+
+
+#
+# DroiMate
+#
+
+WORKDIR ${TOOL_PATH}
+
+# Update repo
+RUN git pull && \
+    git checkout ${TOOL_COMMIT} && \
+    git pull
+
+# clean
+RUN sync && \
+    ./gradlew clean
+
+# Build
+RUN sync && \
+    ./gradlew build && \
+    ./gradlew shadowJar
+
+
+
+#
+# Entrypoint
+#
+
+COPY ./entrypoint.sh /root/entrypoint.sh
+RUN chmod +x /root/entrypoint.sh
+# ENTRYPOINT [ "bash", "/root/entrypoint.sh" ]

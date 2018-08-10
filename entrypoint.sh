@@ -3,6 +3,9 @@
 ROOT_HOME="/root/"
 cd ${ROOT_HOME}
 
+# @TODO: date incorrect, set the same timezone as host
+DATE=$(date +"%Y-%m-%d_%H:%M:%S")
+
 
 OUTPUT_TOOL_PATH="${TOOL_PATH}/out/"
 
@@ -43,14 +46,6 @@ eval ${CMD} &
 echo "- Waiting for emulator to boot completely"
 adb wait-for-device &> /dev/null
 
-# # OLD way
-# TIME_WAIT_EMU_BOOT="1m"
-# if [[ ${EMU_ARCH} == "arm" ]]; then
-#     TIME_WAIT_EMU_BOOT="30m"
-# fi
-# sleep ${TIME_WAIT_EMU_BOOT}
-# DEBUG: adb shell getprop init.svc.bootanim && adb shell getprop init.svc.goldfish-setup && adb shell getprop service.bootanim.exit && adb shell getprop sys.boot_completed && adb shell getprop dev.bootcomplete
-
 # @TODO: check the correct order
 # running -> stopped
 wait_for_boot_complete "getprop init.svc.bootanim" "stopped"
@@ -66,44 +61,65 @@ echo "    - All boot properties succesful"
 
 
 echo "- DrodMate:"
+# This var from by docker run -e
+# DROIDMATE_JAR_FILENAME
 cd ${TOOL_PATH}
+DROIDMATE_LIBS_PATH="${TOOL_PATH}/${DROIDMATE_LIBS_PATH_RELATIVE}"
+DROIDMATE_JAR_FILEPATH="${DROIDMATE_LIBS_PATH}/${DROIDMATE_JAR_FILENAME}"
 
 if [[ "${share_droidmate_flag}" == "1" ]]; then
+    echo -n "    - remove all jars... "
+    rm "${TOOL_PATH}"/*.jars
+    rm "${DROIDMATE_LIBS_PATH}"/*.jars
     echo -n "    - build... "
-    log_filepath="${OUTPUT_TOOL_PATH}/${TOOL_REPONAME}_${TOOL_COMMIT}_build_$(date +"%Y-%m-%d_%H:%M:%S").log"
+    log_filepath="${OUTPUT_TOOL_PATH}/${TOOL_REPONAME}_${TOOL_COMMIT}_build_${DATE}.log"
     ./gradlew build &> ${log_filepath} && \
     echo "OK" || echo "ERROR"
     echo -n "    - shadowJar... "
-    log_filepath="${OUTPUT_TOOL_PATH}/${TOOL_REPONAME}_${TOOL_COMMIT}_shadowJar_$(date +"%Y-%m-%d_%H:%M:%S").log"
+    log_filepath="${OUTPUT_TOOL_PATH}/${TOOL_REPONAME}_${TOOL_COMMIT}_shadowJar_${DATE}.log"
     ./gradlew shadowJar &> ${log_filepath}  && \
     echo "OK" || echo "ERROR"
 fi
 
-echo -n "    - Copy jars... "
-cp ${TOOL_PATH}/project/pcComponents/API/build/libs/shadow-*.jar . && \
+echo -n "    - Copy ${DROIDMATE_JAR_FILENAME} to ${TOOL_PATH}... "
+cp ${DROIDMATE_JAR_FILEPATH} ${TOOL_PATH} && \
     echo "OK" || echo "ERROR"
 
-if [[ -f ${DROIDMATE_RUNNER_CONFIG_DOCKER_PATH} ]]; then
-    echo "    - config.properties"
-    args="--Core-configPath=${DROIDMATE_RUNNER_CONFIG_DOCKER_PATH}"
-else
-    # @TODO: remove
-    echo -e "    - Args to run"
-    # @NOTE: TIME_TOOL_SEC is set by "docker run -e" in the "run.sh"
-    args="--Exploration-apksDir=apks"
-    args="${args} --Selectors-timeLimit=${TIME_TOOL_SEC}"
-fi
-
-echo -e "    - Args to run"
 # @NOTE: TIME_TOOL_SEC is set by "docker run -e" in the "run.sh"
-args="--Exploration-apksDir=apks"
-args="${args} --Selectors-timeLimit=${TIME_TOOL_SEC}"
+#        If you want to change the value, edit the value in the run.properties
+TIME_TOOL_MILISEC=$(( ${TIME_TOOL_SEC} * 1000 ))
+
+echo "    - Options to run DroidMate"
+echo "        - Type = ${DROIDMATE_TYPE_FILE_CONFIG_TOLOAD}"
+case "${DROIDMATE_TYPE_FILE_CONFIG_TOLOAD}" in
+    "${DROIDMATE_TYPE_CONFIG_CONFIG_STR}")
+        echo "        - config.properties"
+        args="--Core-configPath=${DROIDMATE_RUNNER_CONFIG_TOLOAD_DOCKER_PATH}"
+        ;;
+    
+    "${DROIDMATE_TYPE_CONFIG_ARGS_STR}")
+        echo "        - Args to run"
+        args="$(cat ${DROIDMATE_RUNNER_CONFIG_TOLOAD_DOCKER_PATH})"
+        ;;
+    
+    "def")
+        echo "        - Default args to run"
+        args="$(cat ${DROIDMATE_RUNNER_CONFIG_ARGS_DEF_DOCKER_PATH})"
+        args="${args} --Selectors-timeLimit=${TIME_TOOL_MILISEC}"
+        ;;
+    
+    *)
+        echo "        - WARN: DROIDMATE_TYPE_FILE_CONFIG_TOLOAD bad option. Take the defaults."
+        echo "        - Default args to run"
+        args="$(cat ${DROIDMATE_RUNNER_CONFIG_ARGS_DEF_DOCKER_PATH})"
+        args="${args} --Selectors-timeLimit=${TIME_TOOL_MILISEC}"
+        ;;
+esac
 
 echo "    - Running... "
 [[ -z ${TOOL_COMMIT} ]] && TOOL_COMMIT=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-log_filepath="${OUTPUT_TOOL_PATH}/${TOOL_REPONAME}_${TOOL_COMMIT}_run_$(date +"%Y-%m-%d_%H:%M:%S").log"
-jar_file=$(ls shadow-*.jar)
-CMD="java -jar ${jar_file}"
+log_filepath="${OUTPUT_TOOL_PATH}/${TOOL_REPONAME}_${TOOL_COMMIT}_run_${DATE}.log"
+CMD="java -jar ${DROIDMATE_JAR_FILEPATH}"
 CMD="${CMD} ${args}"
 CMD="${CMD} &> ${log_filepath}"
 echo "        - CMD=${CMD}"

@@ -1,5 +1,6 @@
 # https://github.com/uds-se/droidmate/
 # File: droidmate/project/pcComponents/core/src/main/resources/defaultConfig.properties
+# File with the help: droidmate/project/pcComponents/core/src/main/kotlin/org/droidmate/configuration/ConfigurationBuilder.kt
 
 # suppress inspection "UnusedProperty" for whole file
 Core.logLevel=debug
@@ -14,8 +15,8 @@ Output.outputDir=./out/droidMate
 Output.reportDir=report
 Output.coverageDir=coverage
 
-ExecutionMode.report=false
 ExecutionMode.inline=false
+ExecutionMode.report=false
 ExecutionMode.explore=true
 ExecutionMode.coverage=false
 
@@ -88,3 +89,33 @@ UiAutomatorServer.basePort=59800
 ApiMonitorServer.monitorSocketTimeout=60000
 ApiMonitorServer.monitorUseLogcat=false
 ApiMonitorServer.basePort=59701
+
+# suppress inspection "UnusedProperty" for whole file
+
+Core.debugMode=false
+
+# per default this will be overwritten with $default_output/model
+ModelProperties.path.defaultBaseDir=out/model
+ModelProperties.path.statesSubDir=states
+ModelProperties.path.widgetsSubDir=widgets
+ModelProperties.path.cleanDirs=true
+
+ModelProperties.dump.onEachAction=true
+ModelProperties.dump.sep=;
+ModelProperties.dump.stateFileExtension=.csv
+ModelProperties.dump.traceFileExtension=.csv
+#.txt
+ModelProperties.dump.traceFilePrefix=trace
+
+ModelProperties.imgDump.states=true
+# if false all dump.widget.* properties are disabled as well
+ModelProperties.imgDump.widgets=true
+# dumping interacted currently not available (would have to reload state and cut target widget bounds)
+# ModelProperties.imgDump.widget.Interacted=true
+ModelProperties.imgDump.widget.onlyWhenNoText=true
+ModelProperties.imgDump.widget.interactable=true
+ModelProperties.imgDump.widget.nonInteractable=false
+
+# Features
+ModelProperties.Features.statementCoverage=true
+ModelProperties.Features.statementCoverageDir=instrumentation-logs

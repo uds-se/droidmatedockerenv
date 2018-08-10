@@ -1,6 +1,15 @@
 #!/bin/bash
 
+function print_usage() {
+    msg i "Usage: ${0} -h | --help"
+    msg i "Usage: ${0} -c'run.properties_file'"
+    exit 0
+}
+
 set +e
+
+RUN_VARS_FILENAME="run.vars"
+source "${RUN_VARS_FILENAME}"
 
 # @TODO: with getopts
 # API=${1:-"24"}
@@ -13,10 +22,52 @@ RUN_CONFIG_TEMPLATE_FILENAME="run.properties.template"
 
 # load def values
 source "${RUN_CONFIG_TEMPLATE_FILENAME}"
+
 # Overwrite with the custom values
+rebuild_opt_docker=""
+update_droidmate=""
+TEMP=$(getopt -o c:rdh --long config:,rebuild,update-droidmate,h,help, -- "${argv[@]}")
+ex=$?
+[ ${ex} -eq 2 ] && msg e "Parameter is not correct." && exit 1
+[ ${ex} -ne 0 ] && msg e "Error in getopt" && exit 1
+eval set -- "${TEMP}"
+while true ; do
+    case ${1} in
+        "-c" | "--config" )
+            RUN_CONFIG_FILENAME=${2}
+            shift 2
+            break
+            ;;
+        "-r" | "--rebuild" )
+            rebuild_opt_docker="--no-cache"
+            shift 2
+            break
+            ;;
+        "-d" | "--update-droidmate" )
+            build_droidmate="--no-cache"
+            shift 2
+            break
+            ;;
+        -h|-help|--h|--help )
+            print_usage ; exit 0 ;;
+        --) shift ; break ;;
+        *)  print_usage; exit 1 ;;
+    esac
+done
+
+
+if [[ ${rebuild_flag} -eq 1 ]]; then
+    rebuild_opt_docker="--no-cache"
+    update_droidmate="--no-cache"
+fi
+if [[ ${update_droidmate_flag} -eq 1 ]]; then
+    update_droidmate="--no-cache"
+fi
+
 if [[ ! -f ${RUN_CONFIG_FILENAME} ]]; then
     echo "ERROR: Runner config file: \"${RUN_CONFIG_FILENAME}\" not found"
     echo "INFO: duplicate the ${RUN_CONFIG_TEMPLATE_FILENAME} and edit"
+    exit 1
 fi
 source "${RUN_CONFIG_FILENAME}"
 TOOL_COMMIT_ARG=${TOOL_COMMIT}
@@ -24,13 +75,18 @@ TOOL_COMMIT_ARG=${TOOL_COMMIT}
 
 PWD=$(pwd)
 DATE_NOW=$(date +"%Y-%m-%d_%H-%M-%S")
+UID_tmp=$(id -u)
+GID_tmp=$(id -g)
+info_color="\033[0;36m"
+reset_color="\e[0m"
 
 TOOL_NAME="DroidMate"
 TOOL_REPONAME="droidmate"
 
 DOCKERFILE="Dockerfile"
 DOCKER_TAG_TOOL="${TOOL_REPONAME}"
-DOCKERFILE_RUNNER="Dockerfile-runner"
+DOCKERFILE_EMU="Dockerfile-emu"
+DOCKERFILE_BUILD="Dockerfile-build"
 
 share_droidmate=""
 if [[ "${share_droidmate_flag}" == "1" ]] && [[ -d ${TOOL_REPONAME} ]]; then
@@ -46,7 +102,9 @@ if [[ "${share_droidmate_flag}" == "1" ]] && [[ -d ${TOOL_REPONAME} ]]; then
     fi
 fi
 
-DOCKER_RUNNER_TAG="${TOOL_REPONAME}/${TOOL_COMMIT}/${API}/${ARCH}"
+DOCKER_EMU_TAG="${TOOL_REPONAME}/${API}/${ARCH}"
+DOCKER_BUILD_TAG="${DOCKER_EMU_TAG}/${TOOL_COMMIT}"
+DOCKER_RUNNER_TAG="${DOCKER_BUILD_TAG}"
 DOCKER_RUNNER_CONTAINER_NAME="${DATE_NOW}.$(echo ${DOCKER_RUNNER_TAG} | tr '/' '.')"
 # Container name format: [a-zA-Z0-9][a-zA-Z0-9_.-]
 
@@ -65,43 +123,82 @@ out_host_path="${PWD}/${out_str}/${DOCKER_RUNNER_CONTAINER_NAME}"
 mkdir -p ${out_host_path}
 out_docker_path_relative="${TOOL_REPONAME}/${out_str}"
 out_docker_path="${ROOT_HOME}/${out_docker_path_relative}"
-config_str="config.properties"
-config_host_path="${PWD}/${config_str}"
-config_docker_path_relative="${TOOL_REPONAME}/${config_str}"
-config_docker_path="${ROOT_HOME}/${config_docker_path_relative}"
-DROIDMATE_RUNNER_CONFIG_DOCKER_PATH=${config_docker_path}
+DROIDMATE_RUNNER_CONFIG_ARGS_DEF_HOST_PATH="${PWD}/${args_def_filename}"
+DROIDMATE_RUNNER_CONFIG_ARGS_DEF_DOCKER_PATH="${ROOT_HOME}/${args_def_filename}"
 
 
-UID_tmp=$(id -u)
-GID_tmp=$(id -g)
+
+# This vars in run.propperties
+# DROIDMATE_TYPE_FILE_CONFIG_TOLOAD
+# DROIDMATE_FILE_CONFIG_TOLOAD_HOST_PATH_RELATIVE
+DROIDMATE_RUNNER_CONFIG_TOLOAD_HOST_PATH="${PWD}/${DROIDMATE_FILE_CONFIG_TOLOAD_HOST_PATH_RELATIVE}"
+DROIDMATE_RUNNER_CONFIG_TOLOAD_DOCKER_PATH="${ROOT_HOME}/${DROIDMATE_FILE_CONFIG_TOLOAD_HOST_PATH_RELATIVE}"
+
+if [[ -z ${DROIDMATE_TYPE_FILE_CONFIG_TOLOAD} ]]; then
+    echo "ERROR: DROIDMATE_TYPE_FILE_CONFIG_TOLOAD"
+    exit 1
+
+fi
+if [[ ! -f ${DROIDMATE_RUNNER_CONFIG_TOLOAD_HOST_PATH} ]]; then
+    echo "ERROR: The ${TOOL_NAME} config file (${DROIDMATE_RUNNER_CONFIG_TOLOAD_HOST_PATH}) does not exist" 
+    echo "ERROR: Edit the var \"DROIDMATE_FILE_CONFIG_TOLOAD_HOST_PATH_RELATIVE\" in the \"${RUN_CONFIG_FILENAME}\"" 
+    exit 1
+fi
 
 
+
+echo -e "[+] docker build"
+docker_build_log="${out_host_path}/docker_build.log"
+echo -e "\t${info_color}[+] Check the log: ${docker_build_log}${reset_color}"
+echo -n -e "\t[+] ${DOCKERFILE}... "
 docker build \
+    ${rebuild_opt_docker} \
     --file ${DOCKERFILE} \
     --tag "${DOCKER_TAG_TOOL}" \
-    .
+    . > "${docker_build_log}"
+[[ $? -ne 0 ]] && echo "ERROR" && exit 1 || echo "OK"
 
+echo -e -n "\t[+] ${DOCKERFILE_EMU}... "
 docker build \
-    --file ${DOCKERFILE_RUNNER} \
-    --tag "${DOCKER_RUNNER_TAG}" \
+    ${rebuild_opt_docker} \
+    --file ${DOCKERFILE_EMU} \
+    --tag "${DOCKER_EMU_TAG}" \
     --build-arg FROM_STR="${DOCKER_TAG_TOOL}" \
     --build-arg API_ARG="${API}" \
     --build-arg ARCH_ARG="${ARCH}" \
+    . >> "${docker_build_log}"
+[[ $? -ne 0 ]] && echo "ERROR" && exit 1 || echo "OK"
+
+echo -e -n "\t[+] ${DOCKERFILE_BUILD}... "
+docker build \
+    ${update_droidmate} \
+    --file "${DOCKERFILE_BUILD}" \
+    --tag "${DOCKER_BUILD_TAG}" \
+    --build-arg FROM_STR="${DOCKER_EMU_TAG}" \
     --build-arg TOOL_COMMIT_ARG="${TOOL_COMMIT_ARG}" \
-    .
+    . >> "${docker_build_log}"
+[[ $? -ne 0 ]] && echo "ERROR" && exit 1 || echo "OK"
 
-
+echo -e "[+] docker run"
+docker_run_log="${out_host_path}/docker_run.log"
 docker run \
     -e UID="${UID_tmp}" \
     -e GID="${GID_tmp}" \
     -e TIME_TOOL_SEC="${TIME_TOOL_SEC}" \
-    -e DROIDMATE_RUNNER_CONFIG_DOCKER_PATH=${DROIDMATE_RUNNER_CONFIG_DOCKER_PATH} \
     -e share_droidmate_flag=${share_droidmate_flag} \
     -e TOOL_COMMIT=${TOOL_COMMIT} \
     ${share_droidmate} \
     -v "${apks_host_path}":${apks_docker_path} \
     -v "${out_host_path}":${out_docker_path} \
-    -v "${config_host_path}":${config_docker_path} \
+    -v ${DROIDMATE_RUNNER_CONFIG_ARGS_DEF_HOST_PATH}=${DROIDMATE_RUNNER_CONFIG_ARGS_DEF_DOCKER_PATH} \
+    -v DROIDMATE_RUNNER_CONFIG_ARGS_DEF_DOCKER_PATH=${DROIDMATE_RUNNER_CONFIG_ARGS_DEF_DOCKER_PATH} \
+    -e DROIDMATE_LIBS_PATH_RELATIVE=${DROIDMATE_LIBS_PATH_RELATIVE} \
+    -e DROIDMATE_JAR_FILENAME=${DROIDMATE_JAR_FILENAME} \
+    -e DROIDMATE_RUNNER_CONFIG_STR=${DROIDMATE_RUNNER_CONFIG_STR} \
+    -e DROIDMATE_RUNNER_ARGS_STR=${DROIDMATE_RUNNER_ARGS_STR} \
+    -e DROIDMATE_TYPE_FILE_CONFIG_TOLOAD=${DROIDMATE_TYPE_FILE_CONFIG_TOLOAD} \
+    -v "${DROIDMATE_RUNNER_CONFIG_TOLOAD_HOST_PATH}":${DROIDMATE_RUNNER_CONFIG_TOLOAD_DOCKER_PATH} \
+    -e DROIDMATE_RUNNER_CONFIG_TOLOAD_DOCKER_PATH=${DROIDMATE_RUNNER_CONFIG_TOLOAD_DOCKER_PATH} \
     -e DISPLAY="${DISPLAY}" \
     --device="/dev/dri/card0:/dev/dri/card0" \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
@@ -112,9 +209,12 @@ docker run \
     -v /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock:ro '-lxc-conf=lxc.cgroup.devices.allow = c 226:* rwm' \
     --name "${DOCKER_RUNNER_CONTAINER_NAME}" \
     "${DOCKER_RUNNER_TAG}" \
-    /root/entrypoint.sh
+    /root/entrypoint.sh \
+    > ${docker_run_log} &
 
 
-docker wait "${DOCKER_RUNNER_CONTAINER_NAME}" > /dev/null
+echo -e "[+] Waiting... "
+echo -e "\t${info_color}[+] Check the log: ${docker_run_log}${reset_color}"
+sleep 2s && docker wait "${DOCKER_RUNNER_CONTAINER_NAME}" > /dev/null
 
 set -e

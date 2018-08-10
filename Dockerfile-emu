@@ -1,0 +1,22 @@
+
+ARG FROM_STR="droidmate"
+
+FROM ${FROM_STR}
+
+
+ARG API_ARG="24"
+ENV API=${API_ARG}
+ARG ARCH_ARG="x86_64"
+ENV ARCH=${ARCH_ARG}
+
+
+#
+# Emulator
+# 
+
+# Install
+RUN echo yes | ${ANDROID_SDK_FOLDER}/tools/bin/sdkmanager "system-images;android-${API};google_apis;${ARCH}"
+
+# AVD
+ENV AVD_NAME="droidmate_nexus5_${API}_gapps_${ARCH}"
+RUN avdmanager create avd -n "${AVD_NAME}" -k "system-images;android-${API};google_apis;${ARCH}" -d "Nexus 5"
