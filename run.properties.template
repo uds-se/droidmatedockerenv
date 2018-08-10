@@ -8,9 +8,14 @@ ARCH="x86_64"
 TOOL_COMMIT="dev"
 DROIDMATE_LIBS_PATH_RELATIVE="project/pcComponents/API/build/libs/"
 DROIDMATE_JAR_FILENAME="shadow-1.0-all.jar"
+# Force update a branch when the coantiner is builded:
+# 1º option: Remove all the containers, and run again. This rebuild everything from scratch, but take a lot of time.
+# 2º option: Edit the run.properties and change the TOOL_COMMIT, with the SHA commit that you want tu run. This rebuild the container, form that point. Take less time
+# 3º option: Edit the run.properties and change the share_droidmate_flag=1, to share you local DroidMate (have to be in this folder with "droidmate" folder name) with the container. This do not rebuild the container. This is immediatly
 
-# If you want tu use your droidmate downloaded inside this folder. This ignore the var TOOL_COMMIT
+# If you want tu use your DroidMate downloaded inside this folder. This ignore the var TOOL_COMMIT
 share_droidmate_flag="0"
+
 
 # Config file to run DroidMate
 # DROIDMATE_TYPE_FILE_CONFIG_TOLOAD = "def", "args" or "config"
