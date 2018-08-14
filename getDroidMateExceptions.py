@@ -26,7 +26,7 @@ files2check = ["/droidmate_*.log"]
 # files2check = ["/droidmate_*.log", "/droidMate/logs/logcat.txt"]
 
 filters_toTake = ['org.droidmate.']
-ignoreWords = ['vladium', '\tat ']
+ignoreWords = ['vladium', '\tat ', 'lack of ', 'DEBUG']
 
 exception_filename = "exceptions"
 exception_filename_txt = exception_filename + ".txt"
