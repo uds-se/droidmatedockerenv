@@ -41,8 +41,6 @@ exceptionMap_filename_txt = exceptionMap_filename + ".txt"
 # Print iterations progress
 # https://stackoverflow.com/a/34325723/8091456
 # https://gist.github.com/aubricus/f91fb55dc6ba5557fbab06119420dd6a
-
-
 def print_progress(iteration, total, prefix='', suffix='', decimals=1, bar_length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar
