@@ -40,7 +40,7 @@ function wait_for_boot_complete {
   # @THANKS: https://gist.github.com/stackedsax/2639601
   local boot_property=$1
   local boot_property_test=$2
-  echo -n "    - Checking: \"${boot_property}\"... "
+  echo -n "        - Checking: \"${boot_property}\"... "
   local result=`adb shell ${boot_property} 2> /dev/null | grep "${boot_property_test}"`
   while [ -z $result ]; do
     sleep 1
@@ -71,30 +71,12 @@ function main {
 
 
 
-    echo "- Waiting for emulator to boot completely"
-    adb wait-for-device &> /dev/null
-
-    # @TODO: check the correct order
-    # running -> stopped
-    wait_for_boot_complete "getprop init.svc.bootanim" "stopped"
-    # running -> stopped
-    wait_for_boot_complete "getprop init.svc.goldfish-setup" "stopped"
-    # 0 -> 1
-    wait_for_boot_complete "getprop service.bootanim.exit" "1"
-    # not exist -> 1
-    wait_for_boot_complete "getprop sys.boot_completed" "1"
-    # not exist -> 1
-    wait_for_boot_complete "getprop dev.bootcomplete" "1"
-    echo "    - All boot properties succesful"
-
-
-
     echo "- DrodMate:"
     # This var from by docker run -e
     # DROIDMATE_JAR_FILENAME
+    # DROIDMATE_LIBS_PATH_RELATIVE
     cd ${TOOL_PATH}
     DROIDMATE_LIBS_PATH="${TOOL_PATH}/${DROIDMATE_LIBS_PATH_RELATIVE}"
-    DROIDMATE_JAR_FILEPATH="${DROIDMATE_LIBS_PATH}/${DROIDMATE_JAR_FILENAME}"
 
     if [[ "${share_droidmate_flag}" == "1" ]]; then
         echo -n "    - remove all jars... "
@@ -113,14 +95,15 @@ function main {
     if [[ ! -f ${DROIDMATE_JAR_FILENAME} ]]; then
         echo "    - WARN: The DROIDMATE_JAR_FILENAME var (=${DROIDMATE_JAR_FILENAME}) is wrong. Please check your \"run.properties\"."
         DROIDMATE_JAR_FILENAME_array=( $(find . -name "${DROIDMATE_JAR_FILENAME_PATTERN}") )
-        [[ ${#DROIDMATE_JAR_FILENAME_array[@]} -ne 1 ]] && echo "ERROR: " && exit 1
-        DROIDMATE_JAR_FILENAME=${DROIDMATE_JAR_FILENAME_array[0]}
-        echo "    - INFO: Found a \"${DROIDMATE_JAR_FILENAME_PATTERN}\". Setting the DROIDMATE_JAR_FILENAME var to ${DROIDMATE_JAR_FILENAME}."
+        [[ ${#DROIDMATE_JAR_FILENAME_array[@]} -ne 1 ]] && echo "        - ERROR: The pattern match with more than 1" && exit 1
+        DROIDMATE_JAR_FILENAME="$(basename "${DROIDMATE_JAR_FILENAME_array[0]}")"
+        echo "        - INFO: Found a \"${DROIDMATE_JAR_FILENAME_PATTERN}\". Setting the DROIDMATE_JAR_FILENAME var to \"${DROIDMATE_JAR_FILENAME}\"."
     fi
 
     echo -n "    - Copy ${DROIDMATE_JAR_FILENAME} to ${TOOL_PATH}... "
-    cp ${DROIDMATE_JAR_FILEPATH} ${TOOL_PATH} && \
-        echo "OK" || echo "ERROR" && exit 1
+    DROIDMATE_JAR_FILEPATH="${DROIDMATE_LIBS_PATH}/${DROIDMATE_JAR_FILENAME}"
+    cp ${DROIDMATE_JAR_FILEPATH} ${TOOL_PATH}
+    [[ $? -ne 0 ]] && echo "ERROR" && exit 1 || echo "OK"
 
     # @NOTE: TIME_TOOL_SEC is set by "docker run -e" in the "run.sh"
     #        If you want to change the value, edit the value in the run.properties
@@ -152,6 +135,21 @@ function main {
             args="${args} --Selectors-timeLimit=${TIME_TOOL_MILISEC}"
             ;;
     esac
+
+    echo "    - Waiting for emulator to boot completely"
+    adb wait-for-device &> /dev/null
+    # @TODO: check the correct order
+    # running -> stopped
+    wait_for_boot_complete "getprop init.svc.bootanim" "stopped"
+    # running -> stopped
+    wait_for_boot_complete "getprop init.svc.goldfish-setup" "stopped"
+    # 0 -> 1
+    wait_for_boot_complete "getprop service.bootanim.exit" "1"
+    # not exist -> 1
+    wait_for_boot_complete "getprop sys.boot_completed" "1"
+    # not exist -> 1
+    wait_for_boot_complete "getprop dev.bootcomplete" "1"
+    echo "        - All boot properties succesful"
 
     echo "    - Running... "
     [[ -z ${TOOL_COMMIT} ]] && TOOL_COMMIT=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
