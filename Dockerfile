@@ -90,7 +90,7 @@ ENV TOOL="DroidMate"
 ENV TOOL_REPONAME="droidmate"
 ENV TOOL_FOLDERNAME="droidmate"
 ENV TOOL_PATH="/root/${TOOL_FOLDERNAME}"
-ARG TOOL_COMMIT_DEF="dev"
+ARG TOOL_COMMIT_DEF="master"
 ENV ENT ./entrypoint.sh
 
 # Clone

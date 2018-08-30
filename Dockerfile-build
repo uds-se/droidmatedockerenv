@@ -18,8 +18,7 @@ WORKDIR ${TOOL_PATH}
 
 # Update repo
 RUN git pull && \
-    git checkout ${TOOL_COMMIT} && \
-    git pull
+    git checkout ${TOOL_COMMIT}
 
 # clean
 RUN sync && \
