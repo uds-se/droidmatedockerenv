@@ -176,8 +176,6 @@ function main {
 # -> MAIN
 #
 
-sleep 9999999999999999999
-
 # SIGUSR1-handler
 # @THANKS: https://medium.com/@gchudnov/trapping-signals-in-docker-containers-7a57fdda7d86
 # @THANKS: http://man7.org/linux/man-pages/man7/signal.7.html
