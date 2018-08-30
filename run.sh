@@ -51,9 +51,10 @@ function trap_ctrl_c() {
     echo -e "${error_color}[X] Trapped CTRL-C${reset_color}"
     id=$(docker ps -q --filter "status=running" --filter "name=${DOCKER_RUNNER_CONTAINER_NAME}")
     if [[ ! -z ${id} ]]; then
-        echo -en "${error_color}    [X] Kill container ${DOCKER_RUNNER_CONTAINER_NAME}... "
-        docker_kill "${DOCKER_RUNNER_CONTAINER_NAME}" "SIGUSR1"
-        echo -en "${error_color}    [X] Removing container ${DOCKER_RUNNER_CONTAINER_NAME}... "
+        echo -en "${error_color}    [X] Kill container ... "
+        docker_kill "${DOCKER_RUNNER_CONTAINER_NAME}" "SIGUSR1" > /dev/null
+        docker_kill "${DOCKER_RUNNER_CONTAINER_NAME}" "SIGKILL"
+        echo -en "${error_color}    [X] Removing container ... "
         docker_rm "${DOCKER_RUNNER_CONTAINER_NAME}"
     fi
     exit 143 # 128 + 15 -- SIGTERM
@@ -61,10 +62,9 @@ function trap_ctrl_c() {
 
 
 function docker_kill() {
-    [[ $# -ne 2 ]] && echo "ERROR: docker_kill req 2 args; container, signal." && exit 1
+    [[ $# -gt 2 ]] && echo "ERROR: docker_kill req min 1 arg; container, [signal]." && exit 1
     local container="${1}"
-    local signal="${2}"
-    echo "docker kill --signal="${signal}" "${container}" > /dev/null"
+    local signal="${2:-"SIGKILL"}"
     docker kill --signal="${signal}" "${container}" > /dev/null
     [[ $? -ne 0 ]] && echo "ERROR" || echo "OK"
     return $?
