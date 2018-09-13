@@ -73,14 +73,15 @@ ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
 ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
-# TODO comment if that works
+# Don't include this here. Instead use the host adb, when executing the run by
+# mount the host adb
 # ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
 ENV PATH="$PATH:${JAVA_HOME}"
 
+ARG TOOL_COMMIT_DEF="dev"
+ARG GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
 ENV TOOL_FOLDERNAME="droidmate"
 ENV TOOL_PATH="/root/${TOOL_FOLDERNAME}"
-ARG TOOL_COMMIT_DEF="dev"
-ENV GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
 ENV TOOL_OUTPUT_FOLDER="${TOOL_PATH}/output"
 
 # TODO probably not needed
@@ -98,9 +99,7 @@ RUN cd ${TOOL_PATH} && \
     ./gradlew build -x test
 
 # Prepare resources
-ENV APK_FOLDER_SRC="/root/apks"
-ENV APK_FOLDER_DEST="${TOOL_PATH}/apks"
-COPY ${APK_FOLDER} ${APK_FOLDER_DEST}
+ENV APK_FOLDER_CONTAINER="/root/apks"
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
 
