@@ -9,7 +9,8 @@ echo -n "$@ " > args.txt
 echo -n "--Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
 echo "Content of args.txt:"
 cat args.txt
-./gradlew ':project:pcComponents:command:run'
+adb devices
+#./gradlew ':project:pcComponents:command:run'
 
 set +e
 

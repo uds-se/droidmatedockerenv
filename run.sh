@@ -6,10 +6,10 @@
 
 # Run with --debug to create an interactive shell for debugging purposes
 # TODO probably also no hash needed?
-DOCKER_IMAGE="63d69f9dd558"
+DOCKER_IMAGE="b66ba37dae3d"
 ADB_PATH_HOST="/opt/Android/Sdk/platform-tools/adb"
-APK_FOLDER_HOST="/tmp/e20ae504-ec53-452d-9c96-3f99279568d6/"
-APK_HOST="/tmp/e20ae504-ec53-452d-9c96-3f99279568d6/sample.apk"
+APK_FOLDER_HOST="/tmp/defb22d9-6e5f-4e11-8f60-19a99da4895e/"
+APK_HOST="${APK_FOLDER_HOST}com.reddit.frontpage.apk"
 APK_FOLDER_CONTAINER="/root/apks"
 
 
@@ -24,11 +24,12 @@ echo "Create the container with image: ${DOCKER_IMAGE}"
 # Docker ref: https://docs.docker.com/engine/reference/commandline/create/
 if [[ $* == *--debug* ]]; then
 	# Execute without parameters
-	CONTAINER_ID=$(docker create 
-					--net=host /
+	CONTAINER_ID=$(docker create \
+					-i \
+					--net=host \
 					-v ${ADB_PATH_HOST}:/usr/local/bin/adb \
 					-e APK_FOLDER_SRC=${APK_FOLDER_SRC} ${DOCKER_IMAGE} \
-					./runTest.sh)
+					bash)
 else
 	CONTAINER_ID=$(docker create \
 					--net=host \
@@ -39,14 +40,14 @@ fi
 
 echo "Copy apk(s) (${APK_FOLDER_HOST}) into container (${APK_FOLDER_CONTAINER})"
 # Docker ref: https://docs.docker.com/engine/reference/commandline/cp/
-# It seems that docker does not copy the content of a folder, so we have to pass the file
+#docker cp ${APK_HOST} ${CONTAINER_ID}:${APK_FOLDER_CONTAINER}
 docker cp ${APK_HOST} ${CONTAINER_ID}:${APK_FOLDER_CONTAINER}
 
 echo "Start container: ${CONTAINER_ID}"
 # Docker ref: https://docs.docker.com/engine/reference/commandline/start/
 if [[ $* == *--debug* ]]; then
-	# Interactive shell with 'docker start' does somehow not work (Why?!)
-	docker start -i ${CONTAINER_ID}
+	# It seems that -i needs also to be provided during the create process
+	docker start -i -a ${CONTAINER_ID}
 			# -v ${ADB_PATH_HOST}:/usr/local/bin/adb \
 else
 	# Consider --rm
