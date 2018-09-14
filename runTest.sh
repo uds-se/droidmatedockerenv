@@ -3,12 +3,12 @@
 set -e
 
 echo "Run container ${TOOL_FOLDERNAME}"
-echo ${TOOL_PATH}
 cd ${TOOL_PATH}
-echo "$@"
-echo "$@" > args.txt
-echo -e "\n--Exploration-apksDir=${APK_FOLDER_CONTAINER}"
-echo -e "\n--Exploration-apksDir=${APK_FOLDER_CONTAINER}" >> args.txt
+echo "Parameters: $@"
+echo -n "$@ " > args.txt
+echo -n "--Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
+echo "Content of args.txt:"
+cat args.txt
 ./gradlew ':project:pcComponents:command:run'
 
 set +e

@@ -1,10 +1,17 @@
 #!/bin/bash
 
+# TODO Maybe pass only device serial number and write other args into a file,
+# copy that into the container. so that we have this convention and it works
+# with arbitrary tools
+
 # Run with --debug to create an interactive shell for debugging purposes
-DOCKER_IMAGE="1b4e256b45b9d"
+# TODO probably also no hash needed?
+DOCKER_IMAGE="63d69f9dd558"
 ADB_PATH_HOST="/opt/Android/Sdk/platform-tools/adb"
-APK_FOLDER_HOST="/tmp/e20ae504-ec53-452d-9c96-3f99279568d6"
+APK_FOLDER_HOST="/tmp/e20ae504-ec53-452d-9c96-3f99279568d6/"
+APK_HOST="/tmp/e20ae504-ec53-452d-9c96-3f99279568d6/sample.apk"
 APK_FOLDER_CONTAINER="/root/apks"
+
 
 # We have to mount adb to the docker container to prevent opening another adb session.
 # There are some incompatibility issues because of that. So it does not work if the host
@@ -13,23 +20,40 @@ APK_FOLDER_CONTAINER="/root/apks"
 
 echo "Called with parameters: $@"
 
-docker cp ${APK_FOLDER_HOST} ${DOCKER_IMAGE}:${APK_FOLDER_CONTAINER}
-
+echo "Create the container with image: ${DOCKER_IMAGE}"
+# Docker ref: https://docs.docker.com/engine/reference/commandline/create/
 if [[ $* == *--debug* ]]; then
-	docker run \
-    		--net=host \
-    		-it \
-    		-v ${ADB_PATH_HOST}:/usr/local/bin/adb \
-    		${DOCKER_IMAGE} \
-    		/bin/bash
+	# Execute without parameters
+	CONTAINER_ID=$(docker create 
+					--net=host /
+					-v ${ADB_PATH_HOST}:/usr/local/bin/adb \
+					-e APK_FOLDER_SRC=${APK_FOLDER_SRC} ${DOCKER_IMAGE} \
+					./runTest.sh)
+else
+	CONTAINER_ID=$(docker create \
+					--net=host \
+					-v ${ADB_PATH_HOST}:/usr/local/bin/adb \
+					-e APK_FOLDER_SRC=${APK_FOLDER_SRC} ${DOCKER_IMAGE} \
+					./runTest.sh $@)
+fi
+
+echo "Copy apk(s) (${APK_FOLDER_HOST}) into container (${APK_FOLDER_CONTAINER})"
+# Docker ref: https://docs.docker.com/engine/reference/commandline/cp/
+# It seems that docker does not copy the content of a folder, so we have to pass the file
+docker cp ${APK_HOST} ${CONTAINER_ID}:${APK_FOLDER_CONTAINER}
+
+echo "Start container: ${CONTAINER_ID}"
+# Docker ref: https://docs.docker.com/engine/reference/commandline/start/
+if [[ $* == *--debug* ]]; then
+	# Interactive shell with 'docker start' does somehow not work (Why?!)
+	docker start -i ${CONTAINER_ID}
+			# -v ${ADB_PATH_HOST}:/usr/local/bin/adb \
 else
 	# Consider --rm
-	docker run \
-        	--net=host \
-        	-e APK_FOLDER_SRC=${APK_FOLDER_SRC} \
-		-v ${ADB_PATH_HOST}:/usr/local/bin/adb \
-    		${DOCKER_IMAGE} \
-		./runTest.sh "$@"
+	docker start -a ${CONTAINER_ID}
+			# ./runTest.sh "$@"
+			# -e APK_FOLDER_SRC=${APK_FOLDER_SRC} \
+			# -v ${ADB_PATH_HOST}:/usr/local/bin/adb \
 fi
 
     # --privileged \

@@ -82,7 +82,6 @@ ARG TOOL_COMMIT_DEF="dev"
 ARG GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
 ENV TOOL_FOLDERNAME="droidmate"
 ENV TOOL_PATH="/root/${TOOL_FOLDERNAME}"
-ENV TOOL_OUTPUT_FOLDER="${TOOL_PATH}/output"
 
 # TODO probably not needed
 ENV ENT ./entrypoint.sh
@@ -99,7 +98,9 @@ RUN cd ${TOOL_PATH} && \
     ./gradlew build -x test
 
 # Prepare resources
+ENV TOOL_OUTPUT_FOLDER="${TOOL_PATH}/output"
 ENV APK_FOLDER_CONTAINER="/root/apks"
+RUN mkdir ${APK_FOLDER_CONTAINER}
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
 
