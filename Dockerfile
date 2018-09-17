@@ -95,7 +95,7 @@ RUN cd ${TOOL_PATH} && \
     ./gradlew build -x test
 
 # Prepare resources
-ENV TOOL_OUTPUT_FOLDER="${TOOL_PATH}/output"
+ENV TOOL_OUTPUT_FOLDER="/root/output"
 ENV APK_FOLDER_CONTAINER="/root/apks"
 ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
 RUN mkdir ${APK_FOLDER_CONTAINER}
