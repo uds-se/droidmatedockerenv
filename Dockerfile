@@ -103,6 +103,7 @@ ENV APK_FOLDER_CONTAINER="/root/apks"
 RUN mkdir ${APK_FOLDER_CONTAINER}
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
+RUN ln -sf /usr/local/bin/adb ${ANDROID_HOME}/platform-tools/adb
 
 # Clean
 RUN apt-get clean
