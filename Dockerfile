@@ -83,9 +83,6 @@ ARG GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
 ENV TOOL_FOLDERNAME="droidmate"
 ENV TOOL_PATH="/root/${TOOL_FOLDERNAME}"
 
-# TODO probably not needed
-ENV ENT ./entrypoint.sh
-
 # Clone
 RUN git clone ${GIT_REPOSITORY} ${TOOL_PATH} && \
     cd ${TOOL_PATH} && \
@@ -100,10 +97,10 @@ RUN cd ${TOOL_PATH} && \
 # Prepare resources
 ENV TOOL_OUTPUT_FOLDER="${TOOL_PATH}/output"
 ENV APK_FOLDER_CONTAINER="/root/apks"
+ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
 RUN mkdir ${APK_FOLDER_CONTAINER}
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
-RUN ln -sf /usr/local/bin/adb ${ANDROID_HOME}/platform-tools/adb
 
 # Clean
 RUN apt-get clean
