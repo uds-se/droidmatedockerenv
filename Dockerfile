@@ -96,6 +96,7 @@ RUN cd ${TOOL_PATH} && \
 
 # Prepare resources
 ENV TOOL_OUTPUT_FOLDER="/root/output"
+RUN mkdir ${TOOL_OUTPUT_FOLDER}
 ENV APK_FOLDER_CONTAINER="/root/apks"
 ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
 RUN mkdir ${APK_FOLDER_CONTAINER}
