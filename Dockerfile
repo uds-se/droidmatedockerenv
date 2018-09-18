@@ -108,4 +108,4 @@ RUN apt-get clean
 RUN apt-get autoremove
 RUN rm -rf /var/lib/apt/lists/*
 
-CMD ["./runTest.sh"]
+ENTRYPOINT ["./runTest.sh"]

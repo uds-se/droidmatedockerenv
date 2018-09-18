@@ -34,7 +34,7 @@ else
 					--net=host \
 					-v ${ADB_PATH_HOST}:${ADB_PATH_CONTAINER} \
 					${DOCKER_IMAGE} \
-					./runTest.sh $@)
+					$@)
 fi
 
 echo "Copy apk(s) (${APK_HOST}) into container (${APK_FOLDER_CONTAINER})"
