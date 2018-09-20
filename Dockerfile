@@ -2,10 +2,10 @@ FROM debian:stretch
 # FROM debian:stretch-slim
 # => couldn't use stretch-slim because of: `dpkg: dependency problems prevent configuration of ca-certificates-java`
 
-LABEL maintainer "Timo Gühring,svg153"
+LABEL maintainer "Timo Gühring"
 LABEL version "0.5"
 LABEL description "https://github.com/uds-se/droidmate"
-# Mostly copied from https://github.com/sweisgerber-dev/android-sdk-ndk
+# The Android SDK setup follows https://github.com/sweisgerber-dev/android-sdk-ndk
 
 ENV SDK_TOOLS_LINUX_WEB_VERSION="3859397"
 
@@ -65,7 +65,6 @@ RUN echo yes | ${ANDROID_SDK_FOLDER}/tools/bin/sdkmanager "extras;m2repository;c
 RUN echo yes | ${ANDROID_SDK_FOLDER}/tools/bin/sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
 RUN echo yes | ${ANDROID_SDK_FOLDER}/tools/bin/sdkmanager --licenses
 
-
 ENV ANDROID_HOME="${ANDROID_SDK_FOLDER}"
 ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
 
@@ -74,28 +73,18 @@ ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
 ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
-ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
+# Don't include this here. Instead use the host adb, when executing the run by
+# mounting the host adb, refer to run.sh
+# ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
 ENV PATH="$PATH:${JAVA_HOME}"
 
-# fix problem if run the emulator without -no-window
-ENV LD_LIBRARY_PATH="${ANDROID_HOME}/tools/lib:${ANDROID_HOME}/tools/lib64/:${ANDROID_HOME}/emulator/lib64/qt/lib"
-
-
-
-#
-# DroidMate
-#
-
-ENV TOOL="DroidMate"
-ENV TOOL_REPONAME="droidmate"
+ARG TOOL_COMMIT_DEF="dev"
+ARG GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
 ENV TOOL_FOLDERNAME="droidmate"
 ENV TOOL_PATH="/root/${TOOL_FOLDERNAME}"
-ARG TOOL_COMMIT_DEF="master"
-ENV ENT ./entrypoint.sh
 
 # Clone
-RUN URL="https://github.com/uds-se/${TOOL_REPONAME}.git" && \
-    git clone ${URL} ${TOOL_PATH} && \
+RUN git clone ${GIT_REPOSITORY} ${TOOL_PATH} && \
     cd ${TOOL_PATH} && \
     git checkout ${TOOL_COMMIT_DEF}
 
@@ -103,15 +92,20 @@ RUN URL="https://github.com/uds-se/${TOOL_REPONAME}.git" && \
 RUN cd ${TOOL_PATH} && \
     chmod +x gradlew && \
     sync && \
-    ./gradlew build && \
-    ./gradlew shadowJar
+    ./gradlew build -x test
 
+# Prepare resources
+ENV TOOL_OUTPUT_FOLDER="/root/output"
+RUN mkdir ${TOOL_OUTPUT_FOLDER}
+ENV APK_FOLDER_CONTAINER="/root/apks"
+ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
+RUN mkdir ${APK_FOLDER_CONTAINER}
+COPY ./runTest.sh /
+RUN chmod +x ./runTest.sh
 
-
-#
 # Clean
-#
-
 RUN apt-get clean
 RUN apt-get autoremove
 RUN rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["./runTest.sh"]

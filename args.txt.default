@@ -1,1 +1,0 @@
---Exploration-apksDir=apks --Exploration-runOnNotInlined=true --Exploration-launchActivityDelay=0 --Selectors-resetEvery=100 --Selectors-randomSeed=2 --Deploy-installApk=true --Deploy-uninstallApk=true --Selectors-pressBackProbability=0.05 --Selectors-actionLimit=0 --Exploration-deviceIndex=0 --Strategies-dfs=false
