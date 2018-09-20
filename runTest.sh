@@ -1,11 +1,17 @@
 #!/bin/bash
-# By convention the device serial number will be always passed as first parameter
+
+# Caller convention: The first parameter has to be the device serial number
+# followed by arbitrary DroidMate parameters.
+# Do here everything which we have to at running, i.e. preparing the testing
+# tool with the parameters passed at runtime and running the tool. Do the
+# building during the build phase, if possible.
 
 set -e
 
 echo "Run container ${TOOL_FOLDERNAME}"
 
 # Setup adb
+# TODO would be better, if we could include this somehow in the Dockerfile
 ln -sf ${ADB_PATH_CONTAINER} ${ANDROID_HOME}/platform-tools/adb
 
 cd ${TOOL_PATH}

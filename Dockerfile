@@ -5,7 +5,7 @@ FROM debian:stretch
 LABEL maintainer "Timo Gühring"
 LABEL version "0.5"
 LABEL description "https://github.com/uds-se/droidmate"
-# Mostly copied from https://github.com/sweisgerber-dev/android-sdk-ndk
+# The Android SDK setup follows https://github.com/sweisgerber-dev/android-sdk-ndk
 
 ENV SDK_TOOLS_LINUX_WEB_VERSION="3859397"
 
@@ -74,7 +74,7 @@ ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
 ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
 # Don't include this here. Instead use the host adb, when executing the run by
-# mount the host adb
+# mounting the host adb, refer to run.sh
 # ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
 ENV PATH="$PATH:${JAVA_HOME}"
 
