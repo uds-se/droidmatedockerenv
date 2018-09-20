@@ -1,7 +1,14 @@
 #!/bin/bash
 
-# Caller convention: The first parameter has to be the device serial number
-# followed by arbitrary DroidMate parameters.
+# Caller convention:
+# - The first parameter has to be the device serial number.
+# - As next follows a list in square brackets in this format: [ keyword=val keyword2=val2 ]. Right now,
+#   only 'dependency' is supported as keyword, i.e. a git repository is expected, cloned, and
+#   gradlew install will be executed.
+# - A list of arbitrary DroidMate parameters.
+# Example: ./run.sh 07240ba6 [ dependency= https://github.com/uds-se/droidmate ] --Selectors-actionLimit=3
+#
+# In general:
 # Do here everything which we have to at running, i.e. preparing the testing
 # tool with the parameters passed at runtime and running the tool. Do the
 # building during the build phase, if possible.
@@ -20,7 +27,42 @@ touch args.txt
 if [[ "$#" -ge 1 ]]; then
 	echo -n "--Exploration-deviceSerialNumber=$1" > args.txt
 fi
-for i in ${@:2} ; do
+
+if [[ $2 != "[" ]]; then
+    echo "Expected [ as next character, but was $2"
+    exit 1
+fi
+
+# Process dependencies
+echo "Process dependencies"
+INDEX=3
+SubStr="="
+for i in ${@:${INDEX}}; do
+    echo "Param $i"
+    INDEX=$((INDEX+1))
+    if [[ "${i}" == "]" ]]; then
+        break
+    fi
+    keyword=${i%%=*}
+    val=${i#*=}
+    case "$keyword" in
+        ("dependency")
+            echo "We have a dependency"
+            mkdir ${INDEX}
+            git clone ${val} ${INDEX}
+            cd ${INDEX}
+            ./gradlew install
+            ;;
+        (*)
+            echo "Not supported action: $keyword"
+            ;;
+    esac
+done
+
+# Process DroidMate parameters
+echo "Process DroidMate parameters"
+for i in ${@:${INDEX}}; do
+    echo " $i"
 	echo -n " $i" >> args.txt
 done
 echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
