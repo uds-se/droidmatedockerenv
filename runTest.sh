@@ -48,7 +48,8 @@ for i in ${@:${INDEX}}; do
     case "$keyword" in
         ("dependency")
             echo "We have a dependency"
-            mkdir -p ${INDEX}
+            rm -rf ${INDEX}
+            mkdir ${INDEX}
             git clone ${val} ${INDEX}
             cd ${INDEX}
             ./gradlew install
