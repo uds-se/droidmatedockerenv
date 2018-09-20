@@ -1,7 +1,14 @@
 #!/bin/bash
 
-# Caller convention: The first parameter has to be the device serial number
-# followed by arbitrary DroidMate parameters.
+# Caller convention:
+# - The first parameter has to be the device serial number.
+# - As next follows a list in square brackets in this format: [ keyword=val keyword2=val2 ]. Right now,
+#   only 'dependency' is supported as keyword, i.e. a git repository is expected, cloned, and
+#   gradlew install will be executed.
+# - A list of arbitrary DroidMate parameters.
+# Example: ./run.sh 07240ba6 [ dependency= https://github.com/uds-se/droidmate ] --Selectors-actionLimit=3
+#
+# In general:
 # Do here everything which we have to at running, i.e. preparing the testing
 # tool with the parameters passed at runtime and running the tool. Do the
 # building during the build phase, if possible.
