@@ -47,7 +47,6 @@ for i in ${@:${INDEX}}; do
     val=${i#*=}
     case "$keyword" in
         ("dependency")
-            echo "We have a dependency"
             rm -rf ${INDEX}
             mkdir ${INDEX}
             git clone ${val} ${INDEX}
@@ -69,6 +68,8 @@ done
 echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
 echo "Content of args.txt:"
 cat args.txt
-./gradlew ':project:pcComponents:command:run'
 
 set +e
+
+# Execute
+./gradlew ':project:pcComponents:command:run'
