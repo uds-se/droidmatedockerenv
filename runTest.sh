@@ -15,7 +15,7 @@
 
 set -e
 
-echo "Run container ${TOOL_FOLDERNAME}"
+echo "Run container ${TOOL_FOLDERNAME_ENV}"
 
 # Setup adb
 # TODO would be better, if we could include this somehow in the Dockerfile
