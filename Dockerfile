@@ -79,6 +79,12 @@ ENV PATH="$PATH:${ANDROID_HOME}/tools"
 # ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
 ENV PATH="$PATH:${JAVA_HOME}"
 
+# Process dependencies
+ARG SETUP_PARAMETERS="[ ]"
+COPY ./processSetupParameters.sh /
+RUN chmod +x ./processSetupParameters.sh
+RUN ./processSetupParameters.sh ${SETUP_PARAMETERS}
+
 ARG TOOL_COMMIT_DEF="dev"
 ARG GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
 ARG TOOL_FOLDERNAME="droidmate"
@@ -95,12 +101,6 @@ RUN cd ${TOOL_PATH} && \
     chmod +x gradlew && \
     sync && \
     ./gradlew build -x test
-
-# Process dependencies
-ARG SETUP_PARAMETERS="[ ]"
-COPY ./processSetupParameters.sh /
-RUN chmod +x ./processSetupParameters.sh
-RUN ./processSetupParameters.sh ${SETUP_PARAMETERS}
 
 # Prepare resources
 ENV TOOL_OUTPUT_FOLDER="/root/output"
