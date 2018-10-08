@@ -28,40 +28,9 @@ if [[ "$#" -ge 1 ]]; then
 	echo -n "--Exploration-deviceSerialNumber=$1" > args.txt
 fi
 
-if [[ $2 != "[" ]]; then
-    echo "Expected [ as next character, but was $2"
-    exit 1
-fi
-
-# Process dependencies
-echo "Process dependencies"
-INDEX=3
-SubStr="="
-for i in ${@:${INDEX}}; do
-    echo "Param $i"
-    INDEX=$((INDEX+1))
-    if [[ "${i}" == "]" ]]; then
-        break
-    fi
-    keyword=${i%%=*}
-    val=${i#*=}
-    case "$keyword" in
-        ("dependency")
-            rm -rf ${INDEX}
-            mkdir ${INDEX}
-            git clone ${val} ${INDEX}
-            cd ${INDEX}
-            ./gradlew install
-            ;;
-        (*)
-            echo "Not supported action: $keyword"
-            ;;
-    esac
-done
-
 # Process DroidMate parameters
 echo "Process DroidMate parameters"
-for i in ${@:${INDEX}}; do
+for i in ${@:$2}; do
     echo " $i"
 	echo -n " $i" >> args.txt
 done

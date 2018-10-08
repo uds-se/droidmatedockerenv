@@ -2,9 +2,10 @@ FROM debian:stretch
 # FROM debian:stretch-slim
 # => couldn't use stretch-slim because of: `dpkg: dependency problems prevent configuration of ca-certificates-java`
 
-LABEL maintainer "Timo Gühring"
-LABEL version "0.5"
-LABEL description "https://github.com/uds-se/droidmate"
+LABEL maintainer="Timo Gühring"
+LABEL version="0.6"
+LABEL description="Repository: https://github.com/uds-se/droidmatedockerenv/tree/farmtesting \
+for DroidMate-2: https://github.com/uds-se/droidmate"
 # The Android SDK setup follows https://github.com/sweisgerber-dev/android-sdk-ndk
 
 ENV SDK_TOOLS_LINUX_WEB_VERSION="3859397"
@@ -94,6 +95,12 @@ RUN cd ${TOOL_PATH} && \
     chmod +x gradlew && \
     sync && \
     ./gradlew build -x test
+
+# Process dependencies
+ARG SETUP_PARAMETERS="[ ]"
+COPY ./processSetupParameters.sh /
+RUN chmod +x ./processSetupParameters.sh
+RUN ./processSetupParameters.sh ${SETUP_PARAMETERS}
 
 # Prepare resources
 ENV TOOL_OUTPUT_FOLDER="/root/output"
