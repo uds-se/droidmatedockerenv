@@ -29,8 +29,8 @@ if [[ "$#" -ge 1 ]]; then
 fi
 
 # Process DroidMate parameters
-echo "Process DroidMate parameters"
-for i in ${@:$2}; do
+echo "Process DroidMate parameters:"
+for i in ${@:2}; do
     echo " $i"
 	echo -n " $i" >> args.txt
 done

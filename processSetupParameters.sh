@@ -32,3 +32,5 @@ for i in ${@:${INDEX}}; do
             ;;
     esac
 done
+
+exit 0
