@@ -1,7 +1,9 @@
 #!/bin/bash
 
+echo "Setup parameters: $@"
+
 if [[ $1 != "[" ]]; then
-    echo "Expected [ as next character, but was $2"
+    echo "Expected [ as next character, but was $1"
     exit 1
 fi
 
