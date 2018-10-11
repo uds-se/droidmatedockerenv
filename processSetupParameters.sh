@@ -25,6 +25,7 @@ for i in ${@:${INDEX}}; do
             mkdir ${INDEX}
             git clone ${val} ${INDEX}
             cd ${INDEX}
+            chmod +x ./gradlew
             ./gradlew install
             ;;
         (*)
