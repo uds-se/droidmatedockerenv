@@ -35,10 +35,11 @@ for i in ${@:2}; do
 	echo -n " $i" >> args.txt
 done
 echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
-echo "Content of args.txt:"
-cat args.txt
+echo "Arguments:"
+arguments=`cat args.txt`
+echo "arguments"
 
 set +e
 
 # Execute
-./gradlew ':project:pcComponents:command:run'
+./gradlew run --args='${arguments}'
