@@ -26,6 +26,8 @@ RUN apt-get install --yes \
         lib32z1 \
         openjdk-8-jdk \
         openjdk-8-jre
+# Install Python for CI 
+RUN apt-get install --yes python
 RUN apt-get upgrade --yes
 RUN apt-get dist-upgrade --yes
 
