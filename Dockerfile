@@ -54,12 +54,19 @@ RUN echo "count=0\n" > ${HOME}/.android/repositories.cfg
 RUN mkdir -p ${ANDROID_SDK_FOLDER}
 RUN unzip -d ${ANDROID_SDK_FOLDER} -qq android-sdk.zip
 
+# Workaround for
+# Warning: File /android-sdk/.android/repositories.cfg could not be loaded
+RUN mkdir -p /android-sdk/.android \
+        && touch /android-sdk/.android/repositories.cfg
+
 # SDK Installation
 RUN ${ANDROID_SDK_MANAGER} --list || true
 RUN echo yes | ${ANDROID_SDK_MANAGER} "platform-tools"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "tools"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS}"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS_LEGACY}"
+RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MIN}"
+RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MAX}"
 # Android 6.0 and 6.0.1 API 23
 RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-23;google_apis;x86"
 # Android 7.0 API 24
@@ -77,9 +84,11 @@ RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;c
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
 RUN echo yes | ${ANDROID_SDK_MANAGER} --licenses
 
+# Copy adb key
+COPY ./androidfiles/ /root/.android/
+
 # Setup emulators
 # Create the platforms directory, otherwise the error appears when running the emulator: "PANIC: Broken AVD system path"
-RUN mkdir ${ANDROID_SDK_FOLDER}/platforms
 RUN echo no | ${ANDROID_AVD_MANAGER} create avd -n emu23 -k "system-images;android-23;google_apis;x86" -c 1200M
 RUN echo no | ${ANDROID_AVD_MANAGER} create avd -n emu24 -k "system-images;android-24;google_apis;x86" -c 1200M
 RUN echo no | ${ANDROID_AVD_MANAGER} create avd -n emu27 -k "system-images;android-27;google_apis;x86" -c 1200M
