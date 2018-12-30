@@ -7,7 +7,7 @@ LABEL description="Repository: https://github.com/uds-se/droidmatedockerenv/tree
 for DroidMate-2: https://github.com/uds-se/droidmate"
 # Based on a large extent on: https://github.com/sweisgerber-dev/android-sdk-ndk
 # Helpful links:
-# # https://hub.docker.com/r/thyrlian/android-sdk/
+# - https://hub.docker.com/r/thyrlian/android-sdk/
 
 ENV SDK_TOOLS_LINUX_WEB_VERSION="3859397"
 
@@ -71,12 +71,6 @@ RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS}"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS_LEGACY}"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MIN}"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MAX}"
-# Android 6.0 and 6.0.1 API 23
-RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-23;google_apis;x86"
-# Android 7.0 API 24
-RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-24;google_apis;x86"
-# Android 8.1 API 27
-RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-27;google_apis;x86"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;android;m2repository"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;m2repository"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;google_play_services"
@@ -96,6 +90,7 @@ ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
 ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
+# TODO probably remove this comment
 # Don't include this here. Instead use the host adb, when executing the run by
 # mounting the host adb, refer to run.sh
 # ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
@@ -138,4 +133,5 @@ RUN apt-get clean
 RUN apt-get autoremove
 RUN rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["./runTest.sh"]
+# ENTRYPOINT ["./runTest.sh"]
+CMD [ "bash" ]
