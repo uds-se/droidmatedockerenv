@@ -3,8 +3,6 @@ FROM debian:stretch
 # => couldn't use stretch-slim because of: `dpkg: dependency problems prevent configuration of ca-certificates-java`
 
 LABEL maintainer "Timo Gühring"
-LABEL description="Repository: https://github.com/uds-se/droidmatedockerenv/tree/farmtesting \
-for DroidMate-2: https://github.com/uds-se/droidmate"
 # Based on a large extent on: https://github.com/sweisgerber-dev/android-sdk-ndk
 # Helpful links:
 # # https://hub.docker.com/r/thyrlian/android-sdk/
@@ -38,9 +36,6 @@ RUN apt-get install --yes \
         openjdk-8-jdk \
         openjdk-8-jre \
         git-all
-# Install Python and git for CI
-RUN apt-get install --yes python \
-        git
 RUN apt-get upgrade --yes
 RUN apt-get dist-upgrade --yes
 
@@ -67,75 +62,35 @@ RUN mkdir -p /android-sdk/.android \
 RUN ${ANDROID_SDK_MANAGER} --list || true
 RUN echo yes | ${ANDROID_SDK_MANAGER} "platform-tools"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "tools"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS}"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS_LEGACY}"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MIN}"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MAX}"
 # Android 6.0 and 6.0.1 API 23
 RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-23;google_apis;x86"
 # Android 7.0 API 24
 RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-24;google_apis;x86"
 # Android 8.1 API 27
 RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-27;google_apis;x86"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;android;m2repository"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;m2repository"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;google_play_services"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;instantapps"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;market_apk_expansion"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;market_licensing"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;webdriver"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2"
-RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
 RUN echo yes | ${ANDROID_SDK_MANAGER} --licenses
 
 # Copy adb key
 COPY ./androidfiles/ /root/.android/
-
-ENV PATH="$PATH:${ANDROID_HOME}"
-ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/"
-ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
-ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
-ENV PATH="$PATH:${ANDROID_HOME}/tools"
-# Don't include this here. Instead use the host adb, when executing the run by
-# mounting the host adb, refer to run.sh
-# ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
-ENV PATH="$PATH:${JAVA_HOME}"
-
-# Process dependencies
-ARG SETUP_PARAMETERS="[ ]"
-COPY ./processSetupParameters.sh /
-RUN chmod +x ./processSetupParameters.sh
-RUN ./processSetupParameters.sh ${SETUP_PARAMETERS}
-
-ARG TOOL_COMMIT_DEF="dev"
-ARG GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
-ARG TOOL_FOLDERNAME="droidmate"
-ENV TOOL_FOLDERNAME_ENV=${TOOL_FOLDERNAME}
-ENV TOOL_PATH="/root/${TOOL_FOLDERNAME_ENV}"
-
-# Clone
-RUN git clone ${GIT_REPOSITORY} ${TOOL_PATH} && \
-    cd ${TOOL_PATH} && \
-    git checkout ${TOOL_COMMIT_DEF}
-
-# Build
-RUN cd ${TOOL_PATH} && \
-    chmod +x gradlew && \
-    sync && \
-    ./gradlew build -x test
-
-# Prepare resources
-ENV TOOL_OUTPUT_FOLDER="/root/output"
-RUN mkdir ${TOOL_OUTPUT_FOLDER}
-ENV APK_FOLDER_CONTAINER="/root/apks"
-ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
-RUN mkdir ${APK_FOLDER_CONTAINER}
-COPY ./runTest.sh /
-RUN chmod +x ./runTest.sh
 
 # Clean
 RUN apt-get clean
 RUN apt-get autoremove
 RUN rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["./runTest.sh"]
+ENV PATH="$PATH:${ANDROID_HOME}"
+ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
+ENV PATH="$PATH:${ANDROID_HOME}/tools"
+ENV PATH="$PATH:${JAVA_HOME}"
+
+# Create emulator
+ENV SYSTEM_IMAGE="system-images;android-23;google_apis;x86"
+ENV SD_CARD_SIZE="1200"
+ENV START_UP_PARAMETERS="-no-boot-anim -no-window -no-audio -gpu off -no-snapshot-save -wipe-data"
+ENV NAME="emu"
+ENV PORT="5580"
+RUN echo no | ${ANDROID_AVD_MANAGER} create avd -n ${NAME} -k "${SYSTEM_IMAGE}" -c ${SD_CARD_SIZE}M
+
+# Workaround for PANIC: Broken AVD system path. Check your ANDROID_SDK_ROOT value [/android-sdk]!
+RUN mkdir ${ANDROID_HOME}/platforms
+ENTRYPOINT "${ANDROID_EMULATOR}" -avd ${NAME} -port ${PORT} ${START_UP_PARAMETERS}
