@@ -83,14 +83,19 @@ ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
 ENV PATH="$PATH:${JAVA_HOME}"
 
+# Expose adb server port
+EXPOSE 5037
+
 # Create emulator
 ENV SYSTEM_IMAGE="system-images;android-23;google_apis;x86"
 ENV SD_CARD_SIZE="1200"
 ENV START_UP_PARAMETERS="-no-boot-anim -no-window -no-audio -gpu off -no-snapshot-save -wipe-data"
 ENV NAME="emu"
-ENV PORT="5580"
 RUN echo no | ${ANDROID_AVD_MANAGER} create avd -n ${NAME} -k "${SYSTEM_IMAGE}" -c ${SD_CARD_SIZE}M
 
 # Workaround for PANIC: Broken AVD system path. Check your ANDROID_SDK_ROOT value [/android-sdk]!
 RUN mkdir ${ANDROID_HOME}/platforms
-ENTRYPOINT "${ANDROID_EMULATOR}" -avd ${NAME} -port ${PORT} ${START_UP_PARAMETERS}
+
+COPY ./entrypoint.sh /
+RUN chmod +x ./entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
