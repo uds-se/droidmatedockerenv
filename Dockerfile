@@ -91,10 +91,16 @@ ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
 ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
 # TODO probably remove this comment
+# TODO hopefully remove this comment in future
 # Don't include this here. Instead use the host adb, when executing the run by
 # mounting the host adb, refer to run.sh
-# ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
+ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
 ENV PATH="$PATH:${JAVA_HOME}"
+
+# Clean
+RUN apt-get clean
+RUN apt-get autoremove
+RUN rm -rf /var/lib/apt/lists/*
 
 # Process dependencies
 ARG SETUP_PARAMETERS="[ ]"
@@ -123,15 +129,10 @@ RUN cd ${TOOL_PATH} && \
 ENV TOOL_OUTPUT_FOLDER="/root/output"
 RUN mkdir ${TOOL_OUTPUT_FOLDER}
 ENV APK_FOLDER_CONTAINER="/root/apks"
-ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
+# TODO hopefully not needed anymore
+# ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
 RUN mkdir ${APK_FOLDER_CONTAINER}
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
 
-# Clean
-RUN apt-get clean
-RUN apt-get autoremove
-RUN rm -rf /var/lib/apt/lists/*
-
-# ENTRYPOINT ["./runTest.sh"]
-CMD [ "bash" ]
+ENTRYPOINT ["./runTest.sh"]
