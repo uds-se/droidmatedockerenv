@@ -87,11 +87,17 @@ ENV PATH="$PATH:${JAVA_HOME}"
 EXPOSE 5037
 
 # Create emulator
-ENV SYSTEM_IMAGE="system-images;android-23;google_apis;x86"
-ENV SD_CARD_SIZE="1200"
-ENV START_UP_PARAMETERS="-no-boot-anim -no-window -no-audio -gpu off -no-snapshot-save -wipe-data"
-ENV NAME="emu"
-RUN echo no | ${ANDROID_AVD_MANAGER} create avd -n ${NAME} -k "${SYSTEM_IMAGE}" -c ${SD_CARD_SIZE}M
+ARG SYSTEM_IMAGE="system-images;android-23;google_apis;x86"
+ARG SD_CARD_SIZE="1200"
+ARG START_UP_PARAMETERS="-no-boot-anim -no-window -no-audio -gpu off -no-snapshot-save -wipe-data"
+ARG NAME="emu"
+
+ENV ENV_SYSTEM_IMAGE=${SYSTEM_IMAGE}
+ENV ENV_SD_CARD_SIZE=${SD_CARD_SIZE}
+ENV ENV_START_UP_PARAMETERS=${START_UP_PARAMETERS}
+ENV ENV_NAME=${NAME}
+
+RUN echo no | ${ANDROID_AVD_MANAGER} create avd -n ${ENV_NAME} -k "${ENV_SYSTEM_IMAGE}" -c ${ENV_SD_CARD_SIZE}M
 
 # Workaround for PANIC: Broken AVD system path. Check your ANDROID_SDK_ROOT value [/android-sdk]!
 RUN mkdir ${ANDROID_HOME}/platforms

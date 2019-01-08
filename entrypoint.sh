@@ -7,4 +7,4 @@ adb kill-server >/dev/null 2>&1
 # Seems a little bit hacky, but it was the only way I found getting the adb server listening
 # to remote connects
 adb -a nodaemon server >/dev/null 2>&1 &
-${ANDROID_EMULATOR} -avd ${NAME} ${START_UP_PARAMETERS}
+${ANDROID_EMULATOR} -avd ${ENV_NAME} ${ENV_START_UP_PARAMETERS}
