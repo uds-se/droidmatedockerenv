@@ -42,7 +42,8 @@ done
 echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
 echo "Arguments:"
 arguments=`cat args.txt`
-echo "arguments"
+echo '${arguments}'
+echo "---"
 
 set +e
 
