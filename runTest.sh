@@ -48,4 +48,5 @@ echo "---"
 set +e
 
 # Execute
-./gradlew run --args='${arguments}'
+./gradlew run --args='--Exploration-deviceSerialNumber=emulator60899d3b-e21a-47b5-b200-77eb8d613103:5037 --Exploration-apksDir=/root/apks --Output-outputDir=/root/output'
+# ./gradlew run --args='${arguments}'
