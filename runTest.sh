@@ -17,11 +17,6 @@ set -e
 
 echo "Run container ${TOOL_FOLDERNAME_ENV}"
 
-# Setup adb
-# TODO would be better, if we could include this somehow in the Dockerfile
-# TODO hopefully not needed anymore
-#ln -sf ${ADB_PATH_CONTAINER} ${ANDROID_HOME}/platform-tools/adb
-
 cd ${TOOL_PATH}
 echo "Parameters: $@"
 touch args.txt
@@ -48,5 +43,4 @@ echo "---"
 set +e
 
 # Execute
-# ./gradlew run --args='--Exploration-deviceSerialNumber=emulator60899d3b-e21a-47b5-b200-77eb8d613103:5037 --Exploration-apksDir=/root/apks --Output-outputDir=/root/output'
 ./gradlew run --args="${arguments}"
