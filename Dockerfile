@@ -83,17 +83,15 @@ RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;c
 RUN echo yes | ${ANDROID_SDK_MANAGER} --licenses
 
 # Copy adb key
-COPY ./androidfiles/ /root/.android/
+ARG ADB_KEYS_PATH="./androidfiles"
+COPY ${ADB_KEYS_PATH}/adbkey /root/.android/
+COPY ${ADB_KEYS_PATH}/adbkey.pub /root/.android/
 
 ENV PATH="$PATH:${ANDROID_HOME}"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
 ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
-# TODO probably remove this comment
-# TODO hopefully remove this comment in future
-# Don't include this here. Instead use the host adb, when executing the run by
-# mounting the host adb, refer to run.sh
 ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
 ENV PATH="$PATH:${JAVA_HOME}"
 
@@ -129,8 +127,6 @@ RUN cd ${TOOL_PATH} && \
 ENV TOOL_OUTPUT_FOLDER="/root/output"
 RUN mkdir ${TOOL_OUTPUT_FOLDER}
 ENV APK_FOLDER_CONTAINER="/root/apks"
-# TODO hopefully not needed anymore
-# ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
 RUN mkdir ${APK_FOLDER_CONTAINER}
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
