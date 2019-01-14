@@ -23,7 +23,7 @@ echo "Parameters: $@"
 touch args.txt
 if [[ "$#" -ge 2 ]]; then
 	# Setup adb connection
-	adb kill-server >/dev/null 2>&1
+	# adb kill-server >/dev/null 2>&1
 	export ADB_SERVER_SOCKET=tcp:$1
 	adb connect $2
 	adb devices
