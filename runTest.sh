@@ -6,6 +6,7 @@
 #   only 'dependency' is supported as keyword, i.e. a git repository is expected, cloned, and
 #   gradlew install will be executed.
 # - A list of arbitrary DroidMate parameters.
+# TODO
 # Example: ./run.sh 172.18.0.2:5037 [ dependency= https://github.com/uds-se/droidmate ] --Selectors-actionLimit=3
 #
 # In general:
@@ -20,17 +21,17 @@ echo "Run container ${TOOL_FOLDERNAME_ENV}"
 cd ${TOOL_PATH}
 echo "Parameters: $@"
 touch args.txt
-if [[ "$#" -ge 1 ]]; then
+if [[ "$#" -ge 2 ]]; then
 	# Setup adb connection
 	adb kill-server >/dev/null 2>&1
 	export ADB_SERVER_SOCKET=tcp:$1
 	adb devices
-	echo -n "--Exploration-deviceSerialNumber=$1" > args.txt
+	echo -n "--Exploration-deviceSerialNumber=$2" > args.txt
 fi
 
 # Process DroidMate parameters
 echo "Process DroidMate parameters:"
-for i in ${@:2}; do
+for i in ${@:3}; do
     echo " $i"
 	echo -n " $i" >> args.txt
 done
