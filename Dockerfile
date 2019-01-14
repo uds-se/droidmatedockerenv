@@ -82,11 +82,6 @@ RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;c
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
 RUN echo yes | ${ANDROID_SDK_MANAGER} --licenses
 
-# Copy adb key
-ARG ADB_KEYS_PATH="./androidfiles"
-COPY ${ADB_KEYS_PATH}/adbkey /root/.android/
-COPY ${ADB_KEYS_PATH}/adbkey.pub /root/.android/
-
 ENV PATH="$PATH:${ANDROID_HOME}"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
@@ -122,6 +117,11 @@ RUN cd ${TOOL_PATH} && \
     chmod +x gradlew && \
     sync && \
     ./gradlew build -x test
+
+# Copy adb key
+ARG ADB_KEYS_PATH="./androidfiles"
+COPY ${ADB_KEYS_PATH}/adbkey.pub /root/.android/
+COPY ${ADB_KEYS_PATH}/adbkey /root/.android/
 
 # Prepare resources
 ENV TOOL_OUTPUT_FOLDER="/root/output"
