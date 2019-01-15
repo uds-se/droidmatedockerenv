@@ -24,10 +24,10 @@ touch args.txt
 if [[ "$#" -ge 2 ]]; then
 	# Setup adb connection
 	# adb kill-server >/dev/null 2>&1
-	export ADB_SERVER_SOCKET=tcp:$1
+	export ADB_SERVER_SOCKET=tcp:$1:5037
 	# adb connect $2
 	adb devices
-	echo -n "--Exploration-deviceSerialNumber=$2" > args.txt
+	echo -n "--TcpClient-serverAddress=$1 --Exploration-deviceSerialNumber=$2" > args.txt
 fi
 
 # Process DroidMate parameters
