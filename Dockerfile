@@ -131,4 +131,7 @@ RUN mkdir ${APK_FOLDER_CONTAINER}
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
 
-ENTRYPOINT ["./runTest.sh"]
+COPY ./sample.apk ${APK_FOLDER_CONTAINER}
+
+# ENTRYPOINT ["./runTest.sh"]
+CMD ["bash"]
