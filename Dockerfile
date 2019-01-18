@@ -133,5 +133,7 @@ RUN chmod +x ./runTest.sh
 
 COPY ./sample.apk ${APK_FOLDER_CONTAINER}
 
+EXPOSE 5037
+
 # ENTRYPOINT ["./runTest.sh"]
 CMD ["bash"]
