@@ -120,9 +120,9 @@ RUN cd ${TOOL_PATH} && \
 
 # Copy adb key
 # ARG ADB_KEYS_PATH="./androidfiles"
-ARG ADB_KEYS_PATH="home/guehring/.android"
-COPY ${ADB_KEYS_PATH}/adbkey.pub /root/.android/
-COPY ${ADB_KEYS_PATH}/adbkey /root/.android/
+# ARG ADB_KEYS_PATH="home/guehring/.android"
+# COPY ${ADB_KEYS_PATH}/adbkey.pub /root/.android/
+# COPY ${ADB_KEYS_PATH}/adbkey /root/.android/
 
 # Prepare resources
 ENV TOOL_OUTPUT_FOLDER="/root/output"
