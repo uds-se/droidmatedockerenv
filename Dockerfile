@@ -119,7 +119,8 @@ RUN cd ${TOOL_PATH} && \
     ./gradlew build -x test
 
 # Copy adb key
-ARG ADB_KEYS_PATH="./androidfiles"
+# ARG ADB_KEYS_PATH="./androidfiles"
+ARG ADB_KEYS_PATH="/home/guehring/.android"
 COPY ${ADB_KEYS_PATH}/adbkey.pub /root/.android/
 COPY ${ADB_KEYS_PATH}/adbkey /root/.android/
 
