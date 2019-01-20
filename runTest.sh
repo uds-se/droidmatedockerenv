@@ -10,7 +10,7 @@ set -e
 echo "Run container ${TOOL_FOLDERNAME_ENV}"
 
 cd ${TOOL_PATH}
-echo "Parameters: $@"
+echo "Container was called with the following parameters: $@"
 touch args.txt
 
 for i in "$@"
@@ -49,29 +49,15 @@ case $i in
 esac
 done
 
-# if [[ "$#" -ge 2 ]]; then
-# 	# Setup adb connection
-# 	# adb kill-server >/dev/null 2>&1
-# 	# export ADB_SERVER_SOCKET=tcp:$1:5037
-# 	adb connect $1
-# 	adb devices
-# 	echo -n "--TcpClient-serverAddress=$1 --Exploration-deviceSerialNumber=$2" > args.txt
-# fi
+# Finally set the apks directory and output directory for DroidMate
+echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
 
-# # Process DroidMate parameters
-# echo "Process DroidMate parameters:"
-# for i in ${@:3}; do
-#     echo " $i"
-# 	echo -n " $i" >> args.txt
-# done
-# echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
-
+# Print out the connected devices
 adb devices
 
-echo "Arguments:"
+echo "Arguments for DroidMate:"
 arguments=`cat args.txt`
 echo ${arguments}
-echo "---"
 
 set +e
 
