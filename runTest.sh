@@ -44,7 +44,7 @@ case $i in
     shift
     ;;
     *)
-          # unknown option
+		echo "Unknown option"
     ;;
 esac
 done
@@ -65,6 +65,8 @@ done
 # 	echo -n " $i" >> args.txt
 # done
 # echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
+
+adb devices
 
 echo "Arguments:"
 arguments=`cat args.txt`
