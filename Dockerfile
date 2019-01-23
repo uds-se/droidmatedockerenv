@@ -7,14 +7,14 @@ LABEL description="Repository: https://github.com/uds-se/droidmatedockerenv/tree
 for DroidMate-2: https://github.com/uds-se/droidmate"
 # Based on a large extent on: https://github.com/sweisgerber-dev/android-sdk-ndk
 # Helpful links:
-# # https://hub.docker.com/r/thyrlian/android-sdk/
+# - https://hub.docker.com/r/thyrlian/android-sdk/
 
 ENV SDK_TOOLS_LINUX_WEB_VERSION="3859397"
 
-ENV ANDROID_SDK_MAX="27"
+ENV ANDROID_SDK_MAX="28"
 ENV ANDROID_SDK_MIN="23"
 ENV ANDROID_BUILD_TOOLS_LEGACY="26.0.2"
-ENV ANDROID_BUILD_TOOLS="27.0.3"
+ENV ANDROID_BUILD_TOOLS="28.0.3"
 ENV ANDROID_SDK_FOLDER="/android-sdk"
 ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
 # Define some environment variables, some programs require these
@@ -71,12 +71,6 @@ RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS}"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "build-tools;${ANDROID_BUILD_TOOLS_LEGACY}"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MIN}"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "platforms;android-${ANDROID_SDK_MAX}"
-# Android 6.0 and 6.0.1 API 23
-RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-23;google_apis;x86"
-# Android 7.0 API 24
-RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-24;google_apis;x86"
-# Android 8.1 API 27
-RUN echo yes | ${ANDROID_SDK_MANAGER} "system-images;android-27;google_apis;x86"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;android;m2repository"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;m2repository"
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;google;google_play_services"
@@ -88,18 +82,18 @@ RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;c
 RUN echo yes | ${ANDROID_SDK_MANAGER} "extras;m2repository;com;android;support;constraint;constraint-layout;1.0.2"
 RUN echo yes | ${ANDROID_SDK_MANAGER} --licenses
 
-# Copy adb key
-COPY ./androidfiles/ /root/.android/
-
 ENV PATH="$PATH:${ANDROID_HOME}"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS}/"
 ENV PATH="$PATH:${ANDROID_HOME}/build-tools/${ANDROID_BUILD_TOOLS_LEGACY}/"
 ENV PATH="$PATH:${ANDROID_HOME}/platform-tools/"
 ENV PATH="$PATH:${ANDROID_HOME}/tools"
-# Don't include this here. Instead use the host adb, when executing the run by
-# mounting the host adb, refer to run.sh
-# ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
+ENV PATH="$PATH:${ANDROID_HOME}/tools/bin"
 ENV PATH="$PATH:${JAVA_HOME}"
+
+# Clean
+RUN apt-get clean
+RUN apt-get autoremove
+RUN rm -rf /var/lib/apt/lists/*
 
 # Process dependencies
 ARG SETUP_PARAMETERS="[ ]"
@@ -107,7 +101,7 @@ COPY ./processSetupParameters.sh /
 RUN chmod +x ./processSetupParameters.sh
 RUN ./processSetupParameters.sh ${SETUP_PARAMETERS}
 
-ARG TOOL_COMMIT_DEF="dev"
+ARG TOOL_COMMIT_DEF="master"
 ARG GIT_REPOSITORY="https://github.com/uds-se/droidmate.git"
 ARG TOOL_FOLDERNAME="droidmate"
 ENV TOOL_FOLDERNAME_ENV=${TOOL_FOLDERNAME}
@@ -124,18 +118,17 @@ RUN cd ${TOOL_PATH} && \
     sync && \
     ./gradlew build -x test
 
+# Copy adb key
+ARG ADB_KEYS_PATH="./androidfiles"
+COPY ${ADB_KEYS_PATH}/adbkey.pub /root/.android/
+COPY ${ADB_KEYS_PATH}/adbkey /root/.android/
+
 # Prepare resources
 ENV TOOL_OUTPUT_FOLDER="/root/output"
 RUN mkdir ${TOOL_OUTPUT_FOLDER}
 ENV APK_FOLDER_CONTAINER="/root/apks"
-ENV ADB_PATH_CONTAINER="/usr/local/bin/adb"
 RUN mkdir ${APK_FOLDER_CONTAINER}
 COPY ./runTest.sh /
 RUN chmod +x ./runTest.sh
-
-# Clean
-RUN apt-get clean
-RUN apt-get autoremove
-RUN rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["./runTest.sh"]
