@@ -6,7 +6,7 @@ services:
   - docker
 
 install:
-  - docker build -t droidmatedockerenv .
+  - docker build -q -t droidmatedockerenv .
 
 script:
   - docker run
