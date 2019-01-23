@@ -9,10 +9,10 @@ LABEL maintainer "Timo Gühring"
 
 ENV SDK_TOOLS_LINUX_WEB_VERSION="3859397"
 
-ENV ANDROID_SDK_MAX="27"
+ENV ANDROID_SDK_MAX="28"
 ENV ANDROID_SDK_MIN="23"
 ENV ANDROID_BUILD_TOOLS_LEGACY="26.0.2"
-ENV ANDROID_BUILD_TOOLS="27.0.3"
+ENV ANDROID_BUILD_TOOLS="28.0.3"
 ENV ANDROID_SDK_FOLDER="/android-sdk"
 ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
 # Define some environment variables, some programs require these
