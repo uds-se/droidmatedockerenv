@@ -6,7 +6,7 @@ services:
   - docker
 
 install:
-  - docker build -q -t droidmatedockerenv .
+  - travis_wait docker build -q -t droidmatedockerenv .
 
 script:
   - docker run
