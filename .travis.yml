@@ -7,7 +7,3 @@ services:
 
 install:
   - travis_wait 40 docker build -q -t droidmatedockerenv .
-
-script:
-  - docker run
-  - docker ps | grep -q droidmatedockerenv
