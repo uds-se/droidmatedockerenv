@@ -1,4 +1,4 @@
-# DroidMate Docker CI environment [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-info-blue.svg)](https://hub.docker.com/r/timoguehring/droidmatedockerenv/) [![Build Status](https://travis-ci.com/JeannedArk/droidmatedockerenv.svg?branch=farmtesting)](https://travis-ci.com/JeannedArk/droidmatedockerenv)
+# DroidMate Docker CI environment [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-info-blue.svg)](https://hub.docker.com/r/timoguehring/droidmatedockerenv/) [![Build Status](https://travis-ci.com/JeannedArk/droidmatedockerenv.svg?branch=master)](https://travis-ci.com/JeannedArk/droidmatedockerenv)
 [DroidMate](https://github.com/uds-se/droidmate) Docker setup for CI providing an environment with JDK8, Android SDK and Android platform tools.
 
 ### Docker CE
