@@ -8,6 +8,8 @@ Install Docker CE from the official Docker Website:
 * [Ubuntu](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
 * [Debian](https://docs.docker.com/engine/installation/linux/docker-ce/debian/)
 
+Tested with `Docker version 17.03.2-ce, build f5ec1e2`.
+
 #### Post-installation of Docker
 
 It is desireable to setup Docker to be able to run as non-root. To do that, execute the next commands:
