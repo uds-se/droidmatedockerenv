@@ -6,7 +6,7 @@
 
 set -e
 
-echo "Run container ${TOOL_FOLDERNAME_ENV}"
+echo "Run container '${TOOL_FOLDERNAME_ENV}''"
 
 cd ${TOOL_PATH}
 echo "Container was called with the following parameters: $@"
