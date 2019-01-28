@@ -56,7 +56,7 @@ done
 echo -n " --Exploration-apksDir=${APK_FOLDER_CONTAINER} --Output-outputDir=${TOOL_OUTPUT_FOLDER}" >> args.txt
 
 # Print out the connected devices
-adb devices
+# adb devices
 
 echo "Arguments for DroidMate:"
 arguments=`cat args.txt`
