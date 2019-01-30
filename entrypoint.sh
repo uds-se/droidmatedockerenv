@@ -6,5 +6,6 @@ adb kill-server >/dev/null 2>&1
 # Standard port is 5037
 # Seems a little bit hacky, but it was the only way I found getting the adb server listening
 # to remote connects
+# adb devices
 adb -a nodaemon server >/dev/null 2>&1 &
 ${ANDROID_EMULATOR} -avd ${ENV_NAME} ${ENV_START_UP_PARAMETERS}

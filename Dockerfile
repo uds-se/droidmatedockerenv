@@ -5,7 +5,7 @@ FROM debian:stretch
 LABEL maintainer "Timo Gühring"
 # Based on a large extent on: https://github.com/sweisgerber-dev/android-sdk-ndk
 # Helpful links:
-# # https://hub.docker.com/r/thyrlian/android-sdk/
+# https://hub.docker.com/r/thyrlian/android-sdk/
 
 ENV SDK_TOOLS_LINUX_WEB_VERSION="3859397"
 
@@ -85,6 +85,8 @@ ENV PATH="$PATH:${JAVA_HOME}"
 
 # Expose adb server port
 EXPOSE 5037
+EXPOSE 5554
+EXPOSE 5555
 
 # Create emulator
 ARG SYSTEM_IMAGE="system-images;android-23;google_apis;x86"
